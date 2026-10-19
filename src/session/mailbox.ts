@@ -11,11 +11,24 @@ import type { CodeMailbox } from "./session.js";
 
 const run = promisify(execFile);
 
-/** Extract a 6-digit code from a Cinépolis e-mail; prefer digits near "código/code". */
+/** Default sender of Cinépolis account e-mail (a Cinépolis domain, not a personal address). */
+export const DEFAULT_CODE_SENDER = "serviciocinepolis.com.mx";
+
+/** Only verification-code e-mails, not promos from the same sender. */
+export function isCodeEmail(subject: string, text: string): boolean {
+  const s = subject.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  if (/(verific|codigo|code|inicio de sesion|iniciar sesion|acceso)/.test(s)) return true;
+  // Some templates use a generic subject; then the body must say "código de verificación".
+  const b = text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase();
+  return /codigo de (verificacion|acceso|seguridad)|verifica tu cuenta/.test(b);
+}
+
+/** Extract a 6-digit code from a Cinépolis code e-mail; requires it to be next to "código/code". */
 export function extractCode(subject: string, text: string): string | undefined {
   const body = `${subject}\n${text}`.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ");
-  const near = /(c[oó]digo|code|verificaci[oó]n|verifica)[^0-9]{0,80}(\d{6})(?!\d)/i.exec(body);
+  const near = /(c[oó]digo|code|verificaci[oó]n|verifica)[^0-9]{0,120}(\d{6})(?!\d)/i.exec(body);
   if (near) return near[2];
+  if (!isCodeEmail(subject, text)) return undefined;
   const all = [...body.matchAll(/(?<![\d#])(\d{6})(?!\d)/g)].map((m) => m[1]!);
   const uniq = [...new Set(all)];
   return uniq.length === 1 ? uniq[0] : undefined;
@@ -53,6 +66,7 @@ export class ImapCodeMailbox implements CodeMailbox {
     return undefined;
   }
 
+  /** Newest verification-code e-mail received after `since` (others, e.g. promos, are skipped). */
   private async checkOnce(since: number): Promise<string | undefined> {
     const pass = await this.o.password();
     if (!pass) throw new Error("IMAP app password not found (Keychain service cines-mx-imap)");
@@ -62,25 +76,28 @@ export class ImapCodeMailbox implements CodeMailbox {
     try {
       const lock = await client.getMailboxLock("INBOX");
       try {
-        const sinceDate = new Date(since - 60_000);
-        const uids = (await client.search({ since: sinceDate, from: this.o.fromContains ?? "cinepolis" }, { uid: true })) || [];
-        for (const uid of [...uids].reverse().slice(0, 5)) {
+        const sinceDate = new Date(since - 24 * 3_600_000); // IMAP SINCE is date-granular
+        const uids = (await client.search({ since: sinceDate, from: this.o.fromContains ?? DEFAULT_CODE_SENDER }, { uid: true })) || [];
+        const candidates: { at: number; code: string }[] = [];
+        for (const uid of [...uids].reverse().slice(0, 10)) {
           const msg = await client.fetchOne(String(uid), { envelope: true, internalDate: true, source: true }, { uid: true });
           if (!msg) continue;
           const at = new Date(msg.internalDate ?? 0).getTime();
-          if (at < since - 5_000) continue;
-          const raw = msg.source?.toString("utf8") ?? "";
-          const text = decodeQuotedPrintable(raw);
-          const code = extractCode(msg.envelope?.subject ?? "", text);
-          if (code) return code;
+          if (at < since - 5_000) continue; // only mail that arrived after the login request
+          const subject = msg.envelope?.subject ?? "";
+          const text = decodeQuotedPrintable(msg.source?.toString("utf8") ?? "");
+          if (!isCodeEmail(subject, text)) continue;
+          const code = extractCode(subject, text);
+          if (code) candidates.push({ at, code });
         }
+        candidates.sort((a, b) => b.at - a.at);
+        return candidates[0]?.code;
       } finally {
         lock.release();
       }
     } finally {
       await client.logout().catch(() => undefined);
     }
-    return undefined;
   }
 }
 

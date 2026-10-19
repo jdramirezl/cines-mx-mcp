@@ -7,7 +7,7 @@ import type { CinepolisProvider } from "./cinepolis/provider.js";
 import { DryRunDriver, NotYetEnabledDriver, PurchaseLedger, capMxn, type PaymentDriver } from "./order/purchase.js";
 import { SecureInputBroker } from "./secure.js";
 import { BotBrowser, defaultDirs } from "./session/browser.js";
-import { ImapCodeMailbox, keychainSecret } from "./session/mailbox.js";
+import { DEFAULT_CODE_SENDER, ImapCodeMailbox, keychainSecret } from "./session/mailbox.js";
 import { SessionManager } from "./session/session.js";
 
 export interface Services {
@@ -34,7 +34,7 @@ export function buildServices(provider: CinepolisProvider, env = process.env, ho
     ? new ImapCodeMailbox({
         user: imapUser,
         password: async () => env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", imapUser)),
-        fromContains: env.CINES_CODE_SENDER ?? "cinepolis",
+        fromContains: env.CINES_CODE_SENDER ?? DEFAULT_CODE_SENDER,
       })
     : undefined;
   const session = new SessionManager({ browser, mailbox, broker, loginEmail: env.CINES_LOGIN_EMAIL, staticToken: env.CINES_ACCESS_TOKEN });

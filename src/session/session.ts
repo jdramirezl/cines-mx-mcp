@@ -183,7 +183,7 @@ export class SessionManager {
   /** Mailbox first (deterministic), then the user via secure input. One code, one attempt. */
   private async getCode(since: number): Promise<string> {
     if (this.o.mailbox) {
-      const code = await this.o.mailbox.waitForCode(since, 90_000).catch((e: unknown) => {
+      const code = await this.o.mailbox.waitForCode(since, 150_000).catch((e: unknown) => {
         this.log(`mailbox error: ${(e as Error).message}`);
         return undefined;
       });

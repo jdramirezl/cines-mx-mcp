@@ -18,7 +18,7 @@ import { DEFAULT_PROFILE } from "../src/profile.js";
 import { runUntilInput, SecureInputBroker } from "../src/secure.js";
 import { startServer } from "../src/server.js";
 import type { Services } from "../src/services.js";
-import { decodeQuotedPrintable, extractCode } from "../src/session/mailbox.js";
+import { decodeQuotedPrintable, extractCode, isCodeEmail } from "../src/session/mailbox.js";
 import { jwtExpiry, parseAuth0Cache, SessionManager, type SessionBrowser } from "../src/session/session.js";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -167,6 +167,12 @@ describe("mailbox code extraction", () => {
     expect(extractCode("Verifica tu cuenta", "Hola, tu código de verificación es: 482913. Vigencia 10 min. Folio 1234567")).toBe("482913");
     expect(extractCode("Tu código Cinépolis", "<td style='x'>&nbsp;915203&nbsp;</td>")).toBe("915203");
     expect(extractCode("Promo", "Llama al 5521226060 o usa 123456 o 654321")).toBeUndefined();
+  });
+  it("skips promos from the same sender", () => {
+    expect(isCodeEmail("¡2x1 en dulcería este martes!", "Usa el cupón 482913 en taquilla")).toBe(false);
+    expect(extractCode("¡2x1 en dulcería este martes!", "Usa el cupón 482913 en taquilla")).toBeUndefined();
+    expect(isCodeEmail("Club Cinépolis", "Ingresa este código de verificación: 112233")).toBe(true);
+    expect(isCodeEmail("Verifica tu cuenta", "")).toBe(true);
   });
   it("decodes quoted-printable and base64 parts", () => {
     expect(decodeQuotedPrintable("c=C3=B3digo: 11=\r\n2233")).toBe("código: 112233");

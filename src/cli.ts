@@ -145,7 +145,7 @@ async function main(argv: string[]): Promise<number> {
         console.error("Falta CINES_IMAP_USER (en ~/.config/cines-mx/cines.env)");
         return 2;
       }
-      const mb = new ImapCodeMailbox({ user, password: async () => process.env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", user)), fromContains: process.env.CINES_CODE_SENDER ?? "cinepolis" });
+      const mb = new ImapCodeMailbox({ user, password: async () => process.env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", user)), fromContains: process.env.CINES_CODE_SENDER });
       const hours = Number(rest[0] ?? 48);
       const code = await mb.waitForCode(Date.now() - hours * 3_600_000, 1000);
       console.log(code ? `✅ IMAP OK: encontré un código de Cinépolis de las últimas ${hours} h (no se muestra).` : `IMAP OK, pero no hay códigos de Cinépolis en las últimas ${hours} h.`);
