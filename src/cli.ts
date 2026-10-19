@@ -116,11 +116,48 @@ async function main(argv: string[]): Promise<number> {
       for (const [id, tags] of byMovie) console.log(`  ${title.get(id) ?? id}\n    ${tags.join(" | ")}`);
       return 0;
     }
+    case "login": {
+      const { BotBrowser } = await import("./session/browser.js");
+      console.log("Abriendo Chrome con el perfil del bot. Inicia sesión en Cinépolis (correo + código) y espera; se cierra solo.");
+      const ok = await new BotBrowser().interactiveLogin();
+      console.log(ok ? "✅ Sesión de Cinépolis guardada en el perfil del bot." : "❌ No se detectó la sesión (tiempo agotado).");
+      return ok ? 0 : 1;
+    }
+    case "paypal-login": {
+      const { BotBrowser } = await import("./session/browser.js");
+      console.log("Abriendo PayPal en el perfil del bot. Inicia sesión (marca 'mantener sesión' si aparece) y cierra la ventana al terminar.");
+      await new BotBrowser().interactivePaypal();
+      console.log("Listo.");
+      return 0;
+    }
+    case "session": {
+      const { BotBrowser } = await import("./session/browser.js");
+      const { SessionManager } = await import("./session/session.js");
+      const s = new SessionManager({ browser: new BotBrowser(), log: (m) => console.log(m) });
+      const st = await s.keepAlive();
+      console.log(JSON.stringify(st, null, 1));
+      return st.state === "valid" || st.state === "expiring" ? 0 : 1;
+    }
+    case "mailbox-test": {
+      const { ImapCodeMailbox, keychainSecret } = await import("./session/mailbox.js");
+      const user = process.env.CINES_IMAP_USER;
+      if (!user) {
+        console.error("Falta CINES_IMAP_USER (en ~/.config/cines-mx/cines.env)");
+        return 2;
+      }
+      const mb = new ImapCodeMailbox({ user, password: async () => process.env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", user)), fromContains: process.env.CINES_CODE_SENDER ?? "cinepolis" });
+      const hours = Number(rest[0] ?? 48);
+      const code = await mb.waitForCode(Date.now() - hours * 3_600_000, 1000);
+      console.log(code ? `✅ IMAP OK: encontré un código de Cinépolis de las últimas ${hours} h (no se muestra).` : `IMAP OK, pero no hay códigos de Cinépolis en las últimas ${hours} h.`);
+      return 0;
+    }
     default:
-      console.error("usage: cines probe [cinemaId] | cines listings [cinemaId] [today|tomorrow|YYYY-MM-DD]");
+      console.error(
+        "usage: cines probe [cinemaId] | listings [cinemaId] [today|tomorrow|YYYY-MM-DD] | login | paypal-login | session | mailbox-test [hours]",
+      );
       return 2;
   }
 }
 
 const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].split("/").pop() ?? "");
-if (isMain) main(process.argv.slice(2)).then((c) => (process.exitCode = c));
+if (isMain) void import("./server.js").then(({ loadConfigEnv }) => { loadConfigEnv(); return main(process.argv.slice(2)); }).then((c) => (process.exitCode = c));

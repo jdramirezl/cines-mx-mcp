@@ -46,6 +46,8 @@ function main(path: string | undefined): number {
     else if (op === "Billboard" && data.billboard) found.billboardByMovie ??= { variables: v, data };
     else if (op === "Seats" && !v.userSessionId) found.seats ??= { variables: v, data };
     else if (op === "Tickets" && !v.userSessionId) found.tickets ??= { variables: v, data };
+    else if (op === "Tickets" && v.userSessionId) found.memberTickets ??= { variables: v, data };
+    else if (op === "Order") found.order ??= { variables: v, data };
   }
 
   // Trim billboards to the first 3 dates.

@@ -12,6 +12,10 @@
  * and requests whose Host header is not loopback are rejected (DNS rebinding).
  */
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { homedir } from "node:os";
+import { join } from "node:path";
+import { parseEnvFile } from "./envfile.js";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { CinepolisProvider } from "./cinepolis/provider.js";
@@ -20,9 +24,18 @@ import { loadProfile, type Profile } from "./profile.js";
 import type { CinemaProvider } from "./provider.js";
 import { registerReadTools, type ToolContext } from "./tools.js";
 import { registerSeatTools } from "./seatTools.js";
+import { registerOrderTools } from "./orderTools.js";
+import { buildServices, type Services } from "./services.js";
 
 export const VERSION = "0.1.0";
 const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
+
+/** Load ~/.config/cines-mx/cines.env (0600) without overriding variables already set. */
+export function loadConfigEnv(file = join(homedir(), ".config", "cines-mx", "cines.env"), env = process.env): void {
+  if (!existsSync(file)) return;
+  if (statSync(file).mode & 0o077) console.error(`warning: ${file} is readable by others; chmod 600 it`);
+  for (const [k, v] of Object.entries(parseEnvFile(readFileSync(file, "utf8")))) if (env[k] === undefined) env[k] = v;
+}
 
 export interface ServerOptions {
   host?: string;
@@ -31,16 +44,19 @@ export interface ServerOptions {
   profile?: Profile;
   images?: ImageStore;
   now?: () => Date;
+  /** Stateful order services; built from the environment when omitted and the provider is Cinépolis. */
+  services?: Services;
 }
 
 export function assertLoopback(host: string): void {
   if (!LOOPBACK.has(host)) throw new Error(`refusing to bind ${host}: cines-mx-mcp only listens on loopback (127.0.0.1)`);
 }
 
-export function buildMcpServer(ctx: ToolContext & { images: ImageStore; baseUrl: () => string }): McpServer {
+export function buildMcpServer(ctx: ToolContext & { images: ImageStore; baseUrl: () => string; services?: Services }): McpServer {
   const server = new McpServer({ name: "cines-mx-mcp", version: VERSION });
   registerReadTools(server, ctx);
   registerSeatTools(server, ctx);
+  if (ctx.services) registerOrderTools(server, { ...ctx, ...ctx.services });
   return server;
 }
 
@@ -72,11 +88,13 @@ export async function startServer(opts: ServerOptions = {}): Promise<{ server: S
   assertLoopback(host);
   const port = opts.port ?? Number(process.env.CINES_MCP_PORT ?? 8686);
   const images = opts.images ?? new ImageStore();
+  const provider = opts.provider ?? new CinepolisProvider();
   const ctx: ToolContext = {
-    provider: opts.provider ?? new CinepolisProvider(),
+    provider,
     profile: opts.profile ?? loadProfile(),
     now: opts.now,
   };
+  const services = opts.services ?? (provider instanceof CinepolisProvider && opts.provider === undefined ? buildServices(provider) : undefined);
 
   let baseUrl = "";
   const http = createServer(async (req, res) => {
@@ -94,7 +112,7 @@ export async function startServer(opts: ServerOptions = {}): Promise<{ server: S
       if (req.method !== "POST") return send(res, 405, { error: { code: "CINES_BAD_REQUEST", message: "use POST", retryable: false } });
       const body = await readBody(req);
       // Stateless: a fresh server + transport per request (SDK-recommended pattern).
-      const mcp = buildMcpServer({ ...ctx, images, baseUrl: () => baseUrl });
+      const mcp = buildMcpServer({ ...ctx, images, baseUrl: () => baseUrl, services });
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
       res.on("close", () => {
         void transport.close();
@@ -122,12 +140,16 @@ export async function startServer(opts: ServerOptions = {}): Promise<{ server: S
   return {
     server: http,
     url: `${baseUrl}/mcp`,
-    close: () => new Promise((r) => http.close(() => r())),
+    close: () => {
+      services?.stop();
+      return new Promise((r) => http.close(() => r()));
+    },
   };
 }
 
 const isMain = process.argv[1] && /server\.(js|ts)$/.test(process.argv[1]);
 if (isMain) {
+  loadConfigEnv();
   startServer()
     .then(({ url }) => console.log(`cines-mx-mcp ${VERSION} listening on ${url}`))
     .catch((e: unknown) => {

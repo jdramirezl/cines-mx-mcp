@@ -1,0 +1,204 @@
+{
+ "variables": {
+  "orderData": {
+   "orderSessionId": "[SECRET:c451e926]",
+   "billingInfo": {
+    "gstin": "",
+    "hsn": 0,
+    "sac": "",
+    "fssai": ""
+   },
+   "countryId": "MX",
+   "cinema": {
+    "id": "cinepolis-parque-toreo-cdmx",
+    "name": "Parque Toreo",
+    "type": "TRADICIONAL",
+    "vistaId": "570",
+    "businessType": "NEON"
+   },
+   "tickets": {
+    "orderId": "[TOKEN:77d734bf]",
+    "providerName": "vista",
+    "movie": {
+     "name": "Street Fighter",
+     "image": "https://pimcore-content.[SECRET:c381d98a]/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_720x1022_2.jpg",
+     "type": ""
+    },
+    "schedule": {
+     "sessionId": "102599",
+     "screenNumber": "6",
+     "language": "SUB"
+    },
+    "seats": [
+     {
+      "number": "C6",
+      "capacity": 1,
+      "description": "TRADICIONAL",
+      "areaCategoryCode": "0000000001",
+      "position": {
+       "columnIndex": 9,
+       "areaNumber": 1,
+       "rowIndex": 5
+      },
+      "ticketsOptions": [
+       {
+        "id": "5026",
+        "type": "general",
+        "description": "Que Oferton 2026",
+        "ticketTypeCode": "2050",
+        "price": 4500,
+        "selected": false,
+        "isPackageTicket": false,
+        "taxInCents": 621,
+        "bookingFee": 700,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       },
+       {
+        "id": "2224",
+        "type": "general",
+        "description": "Niños",
+        "ticketTypeCode": "0137",
+        "price": 7400,
+        "selected": false,
+        "isPackageTicket": false,
+        "taxInCents": 1021,
+        "bookingFee": 700,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       },
+       {
+        "id": "2225",
+        "type": "general",
+        "description": "3 Era Edad",
+        "ticketTypeCode": "0138",
+        "price": 7400,
+        "selected": false,
+        "isPackageTicket": false,
+        "taxInCents": 1021,
+        "bookingFee": 700,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       },
+       {
+        "id": "2223",
+        "type": "general",
+        "description": "Admision General",
+        "ticketTypeCode": "0136",
+        "price": 9200,
+        "selected": true,
+        "isPackageTicket": false,
+        "loyaltyRecognitionId": "",
+        "isThirdMember": false,
+        "taxInCents": 0,
+        "bookingFee": 0,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       }
+      ]
+     },
+     {
+      "number": "C7",
+      "capacity": 1,
+      "description": "TRADICIONAL",
+      "areaCategoryCode": "0000000001",
+      "position": {
+       "columnIndex": 8,
+       "areaNumber": 1,
+       "rowIndex": 5
+      },
+      "ticketsOptions": [
+       {
+        "id": "5026",
+        "type": "general",
+        "description": "Que Oferton 2026",
+        "ticketTypeCode": "2050",
+        "price": 4500,
+        "selected": false,
+        "isPackageTicket": false,
+        "taxInCents": 621,
+        "bookingFee": 700,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       },
+       {
+        "id": "2224",
+        "type": "general",
+        "description": "Niños",
+        "ticketTypeCode": "0137",
+        "price": 7400,
+        "selected": false,
+        "isPackageTicket": false,
+        "taxInCents": 1021,
+        "bookingFee": 700,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       },
+       {
+        "id": "2225",
+        "type": "general",
+        "description": "3 Era Edad",
+        "ticketTypeCode": "0138",
+        "price": 7400,
+        "selected": false,
+        "isPackageTicket": false,
+        "taxInCents": 1021,
+        "bookingFee": 700,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       },
+       {
+        "id": "2223",
+        "type": "general",
+        "description": "Admision General",
+        "ticketTypeCode": "0136",
+        "price": 9200,
+        "selected": true,
+        "isPackageTicket": false,
+        "loyaltyRecognitionId": "",
+        "isThirdMember": false,
+        "taxInCents": 0,
+        "bookingFee": 0,
+        "taxRate": {
+         "cgstRate": 0,
+         "sgstRate": 0
+        }
+       }
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "data": {
+  "order": {
+   "order": {
+    "cinemaVistaId": "570",
+    "orderUserId": "[PII:c451e926]",
+    "tickets": {
+     "orderId": "[TOKEN:77d734bf]",
+     "__typename": "TicketsResponse"
+    },
+    "total": 19800,
+    "charges": 1400,
+    "subtotal": 18400,
+    "__typename": "OrderResponse"
+   },
+   "__typename": "OrderMutation"
+  }
+ }
+}

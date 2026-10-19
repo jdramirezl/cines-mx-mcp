@@ -1,0 +1,56 @@
+{
+ "variables": {
+  "countryId": "MX",
+  "cinemaVistaId": "570",
+  "sessionId": "102599",
+  "userSessionId": "[SECRET:77d734bf]"
+ },
+ "data": {
+  "tickets": [
+   {
+    "areaCategoryCode": "0000000001",
+    "tickets": [
+     {
+      "id": "4797",
+      "ticketTypeCode": "1902",
+      "description": "Combo Estudiantes",
+      "ticketDescription": null,
+      "priceInCents": 19900,
+      "bookingFee": 600,
+      "taxInCents": 2745,
+      "displaySequence": 2703,
+      "quantityAvailablePerOrder": 1,
+      "loyaltyRecognitionId": "3701",
+      "type": "loyalty",
+      "isPackageTicket": true,
+      "packageContent": {
+       "tickets": [
+        {
+         "description": "ENTRADA CB ESTUD CC CD",
+         "quantity": 1,
+         "__typename": "ticketsData"
+        }
+       ],
+       "concessions": [
+        {
+         "charge": 0,
+         "description": "Incluye 1 asiento.",
+         "displayName": "Combo Estudiantes",
+         "isConfigurable": true,
+         "isInventoryProduct": true,
+         "itemId": "27850",
+         "quantity": 1,
+         "__typename": "concessionsData"
+        }
+       ],
+       "__typename": "PackageContent"
+      },
+      "isThirdMember": false,
+      "__typename": "TicketsData"
+     }
+    ],
+    "__typename": "AreasTicket"
+   }
+  ]
+ }
+}

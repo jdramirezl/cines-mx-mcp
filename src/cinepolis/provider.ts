@@ -24,7 +24,7 @@ const MAX_MOVIE_PAGES = 5;
 
 export class CinepolisProvider implements CinemaProvider {
   readonly chain = "cinepolis" as const;
-  private readonly client: GraphQLClient;
+  readonly client: GraphQLClient;
   private readonly cache: TtlCache<unknown>;
   private readonly tz = new Map<string, string>();
 

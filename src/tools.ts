@@ -103,10 +103,12 @@ export async function ticketAdvice(ctx: ToolContext, s: Showtime, quantity: numb
         .filter((t) => t.priceMxn < def.priceMxn && !/niñ|nin|edad|senior|estud|discap/i.test(t.description))
         .map((t) => ({ type: t.description, priceMxn: t.priceMxn }))
     : [];
+  const round = (n: number) => Math.round(n * 100) / 100;
   return {
     defaultType: def?.description,
     unitMxn: def?.priceMxn,
-    totalMxn: def ? Math.round(def.priceMxn * quantity * 100) / 100 : undefined,
+    feePerTicketMxn: def?.bookingFeeMxn || undefined,
+    totalMxn: def ? round((def.priceMxn + def.bookingFeeMxn) * quantity) : undefined,
     cheaperPromos: cheaper.length ? cheaper : undefined,
     otherTypes: tickets.filter((t) => t !== def).map((t) => `${t.description} $${t.priceMxn}`),
   };

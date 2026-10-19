@@ -53,6 +53,25 @@ nodejs.org installer over Homebrew (Homebrew builds from source).
 | `API key not found` | site script layout changed | set `CINEPOLIS_API_KEY` in the agent env as a stopgap, then fix discovery |
 | slow first answer | catalog warm-up (~7 s) after start | normal; cached for 10 min |
 
+## Account setup (once, on the server Mac, after install)
+
+1. `cp config/cines.env.example ~/.config/cines-mx/cines.env && chmod 600 ~/.config/cines-mx/cines.env`
+   and set `CINES_LOGIN_EMAIL` (your Cinépolis e-mail) and `CINES_IMAP_USER`
+   (the dedicated bot mailbox).
+2. Store the bot mailbox's Gmail app password in the Keychain (prompts, nothing echoed):
+   `security add-generic-password -s cines-mx-imap -a "<bot mailbox>" -w`
+3. `bin/cinesctl mailbox-test` → expect `IMAP OK`.
+4. `bin/cinesctl login` → a Chrome window with the **bot's own profile** opens;
+   log into Cinépolis with your e-mail and the 6-digit code; it closes itself.
+5. `bin/cinesctl paypal-login` → log into PayPal in the same profile (tick
+   "keep me logged in"), then close the window.
+6. `bin/cinesctl session` → `state: valid`, `hasRefreshToken: true`.
+7. `bin/cinesctl restart`.
+
+The bot's Chrome runs **headed** (Cloudflare blocks headless Chrome on
+cinepolis.com); a window may appear briefly during keepalive (every 6 h) or a
+purchase. Keep the user logged in on the server Mac.
+
 ## Uninstall
 
 ```bash

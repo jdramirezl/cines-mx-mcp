@@ -8,6 +8,10 @@
 #   cinesctl health                run the health check now (alerts on change)
 #   cinesctl logs [n]              tail the logs
 #   cinesctl render                print rendered plists (no changes)
+#   cinesctl login                 one-time: log into Cinépolis in the bot's Chrome profile
+#   cinesctl paypal-login          one-time: log into PayPal in the bot's Chrome profile
+#   cinesctl session               refresh + show the Cinépolis session state
+#   cinesctl mailbox-test [hours]  check the bot mailbox (IMAP) and code detection
 #
 # Env: NODE_BIN (Node >= 22.13), CINES_MCP_PORT (default 8686), CINES_HOME (tests).
 set -euo pipefail
@@ -128,6 +132,13 @@ cmd_health() {
   CINES_MCP_PORT="$PORT" "$node" "$dir/dist/health.js"
 }
 
+cmd_cli() { # run a dist/cli.js subcommand with the configured node
+  local node; node="$(pick_node)"
+  local dir="$APP_DIR"; [ -f "$dir/dist/cli.js" ] || dir="$REPO"
+  [ -f "$dir/dist/cli.js" ] || (cd "$REPO" && npm run -s build)
+  (cd "$dir" && "$node" dist/cli.js "$@")
+}
+
 case "${1:-}" in
   install) cmd_install ;;
   uninstall) cmd_uninstall ;;
@@ -137,6 +148,10 @@ case "${1:-}" in
   status) cmd_status ;;
   health) cmd_health ;;
   logs) tail -n "${2:-40}" "$LOG_DIR"/*.log ;;
+  login) cmd_cli login ;;
+  paypal-login) cmd_cli paypal-login ;;
+  session) cmd_cli session ;;
+  mailbox-test) shift; cmd_cli mailbox-test "$@" ;;
   render) n="$(pick_node)"; render "$REPO/launchd/com.jdrami.cines-mcp.plist.in" "$LABEL_MCP" "$n"; render "$REPO/launchd/com.jdrami.cines-health.plist.in" "$LABEL_HEALTH" "$n" ;;
-  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

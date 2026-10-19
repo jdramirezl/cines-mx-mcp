@@ -41,6 +41,7 @@ export function mapCinema(n: z.infer<typeof CinemaNodeSchema>): Cinema {
     isVip: type === "VIP" || /\bvip\b/i.test(n.id),
     cityId: n.cityId ?? "",
     timezone: n.timezone || DEFAULT_TZ,
+    businessType: n.businessType ?? undefined,
     lat: num(n.lat),
     lng: num(n.lng),
     requireContiguousSeating: n.settings?.requireContiguousSeating ?? false,

@@ -35,7 +35,7 @@ interface Resolved {
 }
 
 /** `showtimeId` is `<cinemaVistaId>-<sessionId>` as returned by the read tools. */
-async function resolveShowtime(ctx: ToolContext, showtimeId: string): Promise<Resolved> {
+export async function resolveShowtime(ctx: ToolContext, showtimeId: string): Promise<Resolved> {
   const m = /^(\d+)-(\d+)$/.exec(showtimeId.trim());
   if (!m) throw new CinesError("CINES_BAD_REQUEST", `showtimeId inválido "${showtimeId}" (usa el de cines_showtimes / cines_best_showtime)`);
   const [, vistaId, sessionId] = m as unknown as [string, string, string];

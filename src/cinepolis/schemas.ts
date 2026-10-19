@@ -48,6 +48,7 @@ export const CinemaNodeSchema = z.object({
   cityId: optStr,
   vistaId: z.union([str, z.number()]),
   timezone: optStr,
+  businessType: optStr,
   settings: z.object({ requireContiguousSeating: z.boolean().nullish() }).nullish(),
 });
 

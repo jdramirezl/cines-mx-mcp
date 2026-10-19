@@ -14,6 +14,7 @@ import { homedir, hostname } from "node:os";
 import { dirname, join } from "node:path";
 import { CinepolisProvider } from "./cinepolis/provider.js";
 import { toErrorShape } from "./errors.js";
+import { parseEnvFile } from "./envfile.js";
 import { httpsTransport, type Transport } from "./http/transport.js";
 import { DEFAULT_PROFILE } from "./profile.js";
 
@@ -76,15 +77,7 @@ export function summarize(results: CheckResult[]): string {
   return failed.length ? `fail:${failed.join(",")}` : "ok";
 }
 
-export function parseEnvFile(text: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const line of text.split(/\r?\n/)) {
-    const m = /^\s*(?:export\s+)?([A-Z0-9_]+)\s*=\s*(.*?)\s*$/.exec(line);
-    if (!m || line.trim().startsWith("#")) continue;
-    out[m[1]!] = m[2]!.replace(/^(['"])(.*)\1$/, "$2");
-  }
-  return out;
-}
+export { parseEnvFile } from "./envfile.js";
 
 export function alertText(state: string, results: CheckResult[], host = hostname()): string {
   if (state === "ok") return `🟢 Cines MCP healthy again on ${host}`;

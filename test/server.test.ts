@@ -186,7 +186,7 @@ describe("MCP server", () => {
     expect(value.best.time >= "19:00").toBe(true);
     expect(value.alternatives).toHaveLength(2);
     expect(value.best.price.defaultType).toBe("Admision General");
-    expect(value.best.price.totalMxn).toBe(184);
+    expect(value.best.price.totalMxn).toBe(198); // 2 × ($92 + $7 booking fee), matches the captured order
     expect(value.best.price.cheaperPromos?.[0]?.type).toMatch(/Oferton/);
   });
 

@@ -20,6 +20,8 @@ export interface Cinema {
   isVip: boolean;
   cityId: string;
   timezone: string;
+  /** Chain business line (Cinépolis: NEON…); echoed back in orders. */
+  businessType?: string;
   lat?: number;
   lng?: number;
   requireContiguousSeating: boolean;
