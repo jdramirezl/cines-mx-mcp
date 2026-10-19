@@ -33,3 +33,6 @@ screenshots/
 .vscode/
 .idea/
 *.log
+
+# scratch
+tmp/
