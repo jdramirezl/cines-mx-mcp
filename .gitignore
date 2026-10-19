@@ -1,0 +1,35 @@
+# Dependencies / build
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# NEVER commit captures, sessions or secrets
+*.har
+*.har.json
+captures/
+capture/
+profile/
+browser-profile/
+*cookies*
+*.cookie
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+state/
+screenshots/
+
+# Images: only golden test images are allowed in git
+*.png
+*.jpg
+*.jpeg
+!test/golden/**
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
+*.log
