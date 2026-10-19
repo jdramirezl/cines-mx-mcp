@@ -29,8 +29,10 @@ const ACTS = { readOnlyHint: false, destructiveHint: true, idempotentHint: false
 const SAFE_WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true } as const;
 const READ = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
 
+const STATUS_FOR: Record<string, string> = { email_code: "needs_email_code", otp_3ds: "needs_3ds", cvv: "needs_cvv" };
+
 function needsInput(r: { requestId: string; kind: string; prompt: string; expiresAt: string; imageUrl?: string }) {
-  return ok({ status: "needs_input", requestId: r.requestId, kind: r.kind, prompt: r.prompt, expiresAt: r.expiresAt, imageUrl: r.imageUrl, secure: true });
+  return ok({ status: STATUS_FOR[r.kind] ?? "needs_input", challengeId: r.requestId, kind: r.kind, prompt: r.prompt, expiresAt: r.expiresAt, imageUrl: r.imageUrl, secure: true });
 }
 
 /** Background jobs started by tools that paused for secure input; resolved by cines_secure_input. */
@@ -57,16 +59,17 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
     {
       title: "Hold seats (approval required)",
       description:
-        "Reserve (apartar) the chosen seats for a showtime under the user's Cinépolis account for ~9 minutes, without paying. Requires the user's approval. Validates the seats first. Default ticket type 'Admision General'. Returns holdId, seats, ticket type and the exact total with fees, plus `purchaseApprovalRequired`. May return status 'needs_input' (kind 'email_code') if Cinépolis asks for a login code: the hub must collect it via secure input and call cines_secure_input.",
+        "Reserve (apartar) the chosen seats for a showtime under the user's Cinépolis account for ~9 minutes, without paying. Requires the user's approval. Validates the seats first. Default ticket type 'Admision General'. Returns holdId, seats, ticket type and the exact total with fees, plus `purchaseApprovalRequired`. May return status 'needs_email_code' with a challengeId if Cinépolis asks for a login code: the hub collects it via secure input and calls cines_submit_code.",
       inputSchema: {
         showtimeId: z.string(),
-        seats: z.string().describe("e.g. 'F7,F8' (validated with the same rules as cines_validate_seats)"),
+        seats: z.union([z.string(), z.array(z.string())]).describe("['F7','F8'] or 'F7,F8' (validated with the same rules as cines_validate_seats)"),
+        tickets: z.number().int().min(1).max(10).optional().describe("Party size; must equal the number of seats"),
         ticketType: z.string().optional().describe("Only if the user asked for a specific type (e.g. 'Que Oferton 2026')"),
         wheelchair: z.boolean().optional(),
       },
       annotations: ACTS,
     },
-    async ({ showtimeId, seats, ticketType, wheelchair }) => {
+    async ({ showtimeId, seats, tickets, ticketType, wheelchair }) => {
       try {
         return await runInteractive(async () => {
           const r = await resolveShowtime(ctx, showtimeId);
@@ -78,7 +81,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
             requireContiguous: r.cinema.requireContiguousSeating,
           });
           const labels = parseSeatLabels(seats);
-          const v = validateSeats(layout, labels, { allowWheelchair: wheelchair });
+          const v = validateSeats(layout, labels, { allowWheelchair: wheelchair, tickets });
           if (!v.ok) throw new CinesError("CINES_BAD_REQUEST", v.errors.join(" "));
           const index = new Map(layout.rows.flatMap((row) => row.seats.map((s) => [s.label, s] as const)));
           const movie = await ctx.provider.getMovie(r.showtime.movieId).catch(() => undefined);
@@ -96,11 +99,15 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
           return {
             ...publicHold(hold),
             status: "held",
-            movie: movie?.title,
+            cinema: hold.cinemaName,
+            movie: movie?.title ?? r.showtime.movieId,
+            startsAt: r.showtime.startsAt,
+            total: hold.totalMxn,
+            currency: "MXN",
             purchaseApprovalRequired: approvalRequired(ctx.ledger),
             capMxn: capMxn(),
             warnings: v.warnings.length ? v.warnings : undefined,
-            next: "Muestra el resumen. Para pagar llama cines_purchase con holdId y expectedTotalMxn = totalMxn; para cancelar, cines_release_hold.",
+            next: "Muestra el resumen. Para pagar llama cines_purchase con holdId y expectedTotal = total; para cancelar, cines_release_hold.",
           };
         });
       } catch (e) {
@@ -158,20 +165,20 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
     {
       title: "Pay for held seats (approval required)",
       description:
-        "Pay for a hold. Hard cap $1,000 MXN. `expectedTotalMxn` must equal the hold's totalMxn shown to the user. While fewer than 3 purchases have succeeded, `userApproved: true` is required (only after the user tapped ✅). Never retried. May return status 'needs_input' (kind 'cvv' or 'otp_3ds') — the hub collects it via secure input and calls cines_secure_input. `dryRun: true` simulates without paying.",
+        "Pay for a hold. Hard cap $1,000 MXN. `expectedTotal` must equal the hold's `total` shown to the user. Never pass card data or codes here. While fewer than 3 purchases have succeeded, `userApproved: true` is required (only after the user tapped ✅). Never retried. May return status 'needs_cvv', 'needs_3ds' or 'needs_email_code' with a challengeId — the hub collects the secret via secure input and calls cines_submit_code. `dryRun: true` simulates without paying.",
       inputSchema: {
         holdId: z.string(),
-        expectedTotalMxn: z.number().positive(),
+        expectedTotal: z.number().positive().describe("MXN; must equal the hold's `total` shown to the user"),
         method: z.enum(["paypal", "card"]).optional().describe("Default paypal; card = card saved in the Cinépolis/DEUNA wallet"),
         userApproved: z.boolean().optional(),
         dryRun: z.boolean().optional(),
       },
       annotations: ACTS,
     },
-    async (args) => {
+    async ({ expectedTotal, ...rest }) => {
       try {
         return await runInteractive(() =>
-          purchase(args, {
+          purchase({ ...rest, expectedTotalMxn: expectedTotal }, {
             holds: ctx.holds,
             ledger: ctx.ledger,
             driver: ctx.driver,
@@ -187,20 +194,20 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
   );
 
   server.registerTool(
-    "cines_secure_input",
+    "cines_submit_code",
     {
       title: "Deliver a secret the user typed (hub only)",
       description:
-        "HUB ONLY — must not be exposed to the language model. Delivers the user's reply to a pending secure-input request (requestId from a 'needs_input' result) and continues the paused operation, returning its next result (final, or another needs_input). The value is never logged or returned.",
-      inputSchema: { requestId: z.string(), value: z.string().min(1).max(32) },
+        "HUB ONLY — must not be exposed to the language model. Delivers the user's secure-input reply (6-digit e-mail code, 3DS/OTP code or CVV) for a challengeId from a needs_* result, and continues the paused operation, returning its next result (held / paid / another needs_* / error). The value is never logged or returned.",
+      inputSchema: { challengeId: z.string(), code: z.string().min(1).max(32) },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
-    async ({ requestId, value }) => {
+    async ({ challengeId, code }) => {
       try {
-        const job = jobs.get(requestId);
-        ctx.broker.submit(requestId, value);
+        const job = jobs.get(challengeId);
+        ctx.broker.submit(challengeId, code);
         if (!job) return ok({ status: "accepted" });
-        jobs.delete(requestId);
+        jobs.delete(challengeId);
         return await runInteractive(() => job);
       } catch (e) {
         return fail(e);

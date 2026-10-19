@@ -10,6 +10,7 @@
  *   - any unexpected page stops the run with a screenshot.
  * The language model never drives the payment page: the driver is code.
  */
+import { randomBytes } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Hold, HoldService } from "../cinepolis/orders.js";
@@ -64,6 +65,7 @@ export class NotYetEnabledDriver implements PaymentDriver {
 }
 
 export interface LedgerEntry {
+  purchaseId?: string;
   holdId: string;
   at: string;
   totalMxn: number;
@@ -164,7 +166,7 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
     if (prior) throw new CinesError("CINES_PAYMENT_FAILED", `Ya se intentó pagar este apartado (${prior.status}); nunca reintento un pago. Revisa tu correo.`);
   }
   const method = args.method ?? "paypal";
-  const entry = d.ledger.add({ holdId: hold.holdId, at: new Date(now()).toISOString(), totalMxn: hold.totalMxn, method: dryRun ? "dry-run" : method, status: "started", dryRun });
+  const entry = d.ledger.add({ purchaseId: `pur_${randomBytes(6).toString("hex")}`, holdId: hold.holdId, at: new Date(now()).toISOString(), totalMxn: hold.totalMxn, method: dryRun ? "dry-run" : method, status: "started", dryRun });
   if (!dryRun) {
     hold.status = "purchasing";
     d.holds.update(hold);
@@ -179,7 +181,7 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
       hold.status = "purchased";
       d.holds.update(hold);
     }
-    return { status: "paid" as const, dryRun: dryRun || undefined, bookingNumber: r.bookingNumber, transactionNumber: r.transactionNumber, totalMxn: hold.totalMxn, seats: hold.seats, screenshotPath: r.screenshotPath };
+    return { status: "paid" as const, purchaseId: entry.purchaseId, dryRun: dryRun || undefined, bookingNumber: r.bookingNumber, transactionNumber: r.transactionNumber, total: hold.totalMxn, currency: "MXN" as const, totalMxn: hold.totalMxn, seats: hold.seats, screenshotPath: r.screenshotPath };
   } catch (e) {
     const err = e instanceof CinesError ? e : new CinesError("CINES_PAYMENT_FAILED", (e as Error).message);
     // Unknown outcome = do not release, do not retry; the user checks their e-mail.

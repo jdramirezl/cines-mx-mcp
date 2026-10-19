@@ -28,66 +28,102 @@ style: a failure is `isError: true` with one JSON text block that is exactly
 | `cines_upcoming` | `days?`, `presaleOnly?` | upcoming releases / presales |
 | `cines_seat_map` | `showtimeId`, `tickets?`, `wheelchair?` | `imageUrl` (PNG), `proposal` e.g. `["D5","D6"]`, counts — does not hold |
 | `cines_validate_seats` | `showtimeId`, `seats` ("F7,F8"), `tickets?`, `wheelchair?` | `ok`, `errors`, `warnings`, preview `imageUrl` — does not hold |
-| `cines_hold_status` | – | active hold (`secondsLeft`), pending secure inputs, recent purchases, `successfulPurchases`, `purchaseApprovalRequired`, session state |
+| `cines_hold_status` | – | active hold (`secondsLeft`), pending challenges, recent purchases, `successfulPurchases`, `purchaseApprovalRequired`, session state |
 
-### Acting on the user's behalf
+### Acting on the user's behalf (final Phase 3 contract, v1)
 
-| Tool | Gate | Arguments | Returns |
-|---|---|---|---|
-| `cines_hold_seats` | **approval** (`destructiveHint: true`) | `showtimeId`, `seats` ("F7,F8"), `ticketType?` (only if the user asked; default Admision General), `wheelchair?` | `status:"held"`, `holdId`, `expiresAt` (~9 min), `seats`, `ticketType`, `unitMxn`, `chargesMxn`, `subtotalMxn`, `totalMxn`, `purchaseApprovalRequired`, `capMxn` — or `needs_input` (see below) |
-| `cines_release_hold` | none (`destructiveHint: false`) | `holdId?` (default: active hold) | `status:"released"` or `"none"` |
-| `cines_purchase` | **approval** (`destructiveHint: true`) | `holdId`, `expectedTotalMxn` (= the hold's `totalMxn` shown on the card), `method?` ("paypal" default, "card" = card saved in the Cinépolis/DEUNA wallet), `userApproved?` (boolean, required `true` while `purchaseApprovalRequired`), `dryRun?` | `status:"paid"`, `bookingNumber`, `transactionNumber?`, `totalMxn`, `seats` — or `needs_input` |
-| `cines_secure_input` | **hub-only, never shown to the model** | `requestId`, `value` | the paused tool's next result (`held`/`paid`/another `needs_input`) or an error |
+All amounts are **MXN, authoritative, fees included** (`currency: "MXN"`).
+The hub may enforce its $1,000 cap from `total`; the server enforces it too.
 
-Server-enforced purchase rules (the hub enforces them too): hard cap
-$1,000 MXN (`CINES_PURCHASE_CAP_MXN` can only lower it); `expectedTotalMxn`
-must equal the hold; while fewer than 3 purchases succeeded,
-`userApproved: true` is required; one purchase in flight; each hold is paid
-at most once; a payment is never retried (on failure the user checks e-mail).
+**`cines_hold_seats`** — GATED (`destructiveHint: true`)
+
+| Arg | Type | Notes |
+|---|---|---|
+| `showtimeId` | string | from `cines_showtimes` / `cines_best_showtime` |
+| `seats` | string[] (or `"F7,F8"`) | validated like `cines_validate_seats` |
+| `tickets` | int, optional | party size; must equal `seats.length` |
+| `ticketType` | string, optional | only if the user asked; default Admision General; Club tickets never by default |
+| `wheelchair` | bool, optional | |
+
+→ `{status:"held", holdId, cinema, movie, startsAt, seats, ticketType, unitMxn, chargesMxn, subtotalMxn, total, currency:"MXN", expiresAt, purchaseApprovalRequired, capMxn}`
+or `{status:"needs_email_code", challengeId, …}` (see Secure input).
+`expiresAt` ≈ 9 min; the server auto-releases at expiry.
+
+**`cines_purchase`** — GATED (`destructiveHint: true`)
+
+| Arg | Type | Notes |
+|---|---|---|
+| `holdId` | string | |
+| `expectedTotal` | number (MXN) | must equal the hold's `total` shown on the approval card (anti-drift) |
+| `userApproved` | bool | required `true` while `purchaseApprovalRequired` (first 3 purchases) |
+| `method` | `"paypal"` (default) \| `"card"` | `card` = card saved in the Cinépolis/DEUNA wallet |
+| `dryRun` | bool, optional | simulate; nothing is charged |
+
+**No secrets as arguments**: there is deliberately no `cvv` parameter. When a
+method needs one, the call returns `needs_cvv` and the secret goes through
+`cines_submit_code` (hub-only), so it can never come from the model.
+
+→ `{status:"paid", purchaseId, bookingNumber, transactionNumber?, total, currency:"MXN", seats}`
+or `{status:"needs_cvv" | "needs_3ds" | "needs_email_code", challengeId, …}`.
+
+**`cines_submit_code`** — HUB-ONLY, never offered to the model
+
+`{challengeId, code}` → the paused call's next result, with the same shapes as
+above: `held`, `paid`, another `needs_*`, or an error. A wrong format returns
+`CINES_BAD_REQUEST` and the challenge stays open.
+
+**`cines_release_hold`** — ungated (`destructiveHint: false`)
+
+`{holdId?}` (default: the active hold) → `{status:"released" | "none", holdId?, seats?}`
+
+Server-enforced rules (the hub enforces them too):
+- hard cap $1,000 MXN; `CINES_PURCHASE_CAP_MXN` can only lower it
+- `expectedTotal` must equal the hold's `total`
+- `userApproved: true` required for the first 3 purchases
+- one purchase in flight; each hold is paid at most once; a payment is never retried (on failure the user checks e-mail)
+
 Real payment is **disabled** until the live PayPal flow is verified with the
-user (calls fail with `CINES_PAYMENT_FAILED … aún no está habilitado`);
-`dryRun: true` works now.
+user. Until then a real call fails with `CINES_PAYMENT_FAILED … aún no está habilitado`; `dryRun: true` works now.
 
 Hub flow:
+1. `cines_seat_map` → `sendPhoto(imageUrl)`; the user replies with seats → `cines_validate_seats`.
+2. Gate `cines_hold_seats` → summary card from the result: cinema, movie, `startsAt`, seats, ticket type, `total` MXN.
+3. While `purchaseApprovalRequired`: ✅/❌ card; on ✅ call `cines_purchase{holdId, expectedTotal: total, userApproved: true}`.
+   After 3 successes and `total ≤ 1000`, the hub may call it right after the hold without a second ✅. Above the cap: never.
+4. On ❌ or timeout → `cines_release_hold`.
 
-1. `cines_seat_map` → `sendPhoto(imageUrl)`; user replies seats → `cines_validate_seats`.
-2. Gate `cines_hold_seats` (approval card or `propose_plan`) → summary card from the result:
-   cinema, movie, date/time, language/format, seats, ticket type, total with fees.
-3. First 3 purchases: ✅/❌ card on that summary; on ✅ call `cines_purchase` with
-   `expectedTotalMxn = totalMxn` and `userApproved: true`. After 3 successes
-   (`purchaseApprovalRequired: false`) and `totalMxn ≤ 1000`, the hub may call it
-   right after the hold without a second ✅. Above the cap: never.
-4. ❌ or timeout → `cines_release_hold`.
+## Secure input
 
-## Secure input (Phase 3 groundwork)
-
-Any acting tool may return:
+A `needs_*` result looks like:
 
 ```json
-{ "status": "needs_input", "secure": true, "requestId": "sec_…", "kind": "email_code | cvv | otp_3ds",
-  "prompt": "…", "expiresAt": "ISO", "imageUrl": "http://127.0.0.1:8686/images/….png (optional, e.g. 3DS page)" }
+{ "status": "needs_email_code | needs_3ds | needs_cvv", "secure": true, "challengeId": "sec_…",
+  "kind": "email_code | otp_3ds | cvv", "prompt": "…", "expiresAt": "ISO",
+  "imageUrl": "http://127.0.0.1:8686/images/….png (optional, e.g. 3DS page)" }
 ```
 
-The hub must then:
+Hub behaviour:
+- send `prompt` to the user, and `imageUrl` via `sendPhoto` if present;
+- enter **secure-input mode** for `challengeId`: the user's next message is not
+  added to model context or memory, not logged, and is deleted from the chat if possible;
+- call `cines_submit_code({challengeId, code})` directly and handle its result like the original call's result;
+- give up at `expiresAt`, when the server also cancels the challenge.
 
-- send `prompt` (and `imageUrl` via `sendPhoto` if present) to the user;
-- put the chat in **secure-input mode** for that `requestId`: the user's next
-  message is NOT added to model context or memory, NOT logged, and is deleted
-  from the Telegram chat after reading if possible;
-- call `cines_secure_input({requestId, value})` directly (not through the
-  model) and handle its result like the original tool's result (it can be
-  `held`, `paid`, an error, or another `needs_input`);
-- give up after `expiresAt` (the server cancels the request itself);
-- never offer `cines_secure_input` to the model as a tool.
+| status | kind | when | format |
+|---|---|---|---|
+| `needs_email_code` | `email_code` | session expired and the bot mailbox did not deliver the code within ~150 s | 6 digits |
+| `needs_cvv` | `cvv` | `method:"card"` | 3–4 digits |
+| `needs_3ds` | `otp_3ds` | bank 3-D Secure / OTP | 4–10 alphanumerics |
 
-| kind | when | format |
-|---|---|---|
-| `email_code` | Cinépolis session expired and the mailbox did not deliver the code | 6 digits |
-| `cvv` | `method:"card"` with a saved card | 3–4 digits |
-| `otp_3ds` | bank 3-D Secure / OTP during payment | 4–10 alphanumerics |
+A call that takes longer than ~110 s returns `{status:"in_progress", jobId}`; poll `cines_hold_status`.
 
-If a tool call takes longer than ~110 s it returns
-`{status:"in_progress", jobId}`; poll `cines_hold_status`.
+Mapping from thread 5's draft:
+- `seats[]`, `tickets`, `holdId`, `cinema`, `movie`, `startsAt`, `total`, `currency`, `expiresAt`: adopted as proposed.
+- `needs_3ds` / `needs_email_code` + `challengeId`: adopted; `needs_cvv` added.
+- `cines_submit_code{challengeId, code}`: adopted.
+- `purchaseId`: adopted.
+- `cvv?` on `cines_purchase`: replaced by `needs_cvv` → `cines_submit_code`, so a secret can never be a model-visible argument.
+- Added `expectedTotal` (anti-drift) and `userApproved` (first-3 rule), both required server-side.
 
 ## Images
 
@@ -118,6 +154,6 @@ it and sends it with Telegram `sendPhoto`.
 > Admision General; mention cheaper promos or Club tickets only as advice. For
 > seats call `cines_seat_map` (send the image); if the user replies seats like
 > "F7,F8", call `cines_validate_seats`. Holding (`cines_hold_seats`) and paying
-> (`cines_purchase`) need approval; pass `expectedTotalMxn` exactly as shown.
-> If a result says `needs_input`, do not ask for or repeat the secret yourself;
-> the hub collects it privately.
+> (`cines_purchase`) need approval; pass `expectedTotal` = the hold's `total`.
+> Never ask for, accept or repeat card data or codes in chat; if a result says
+> `needs_*`, the hub collects the secret privately.
