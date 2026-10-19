@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Rendered by bin/cinesctl install. Do not edit the installed copy by hand. -->
+<!-- The server refuses any host but loopback: it has no authentication. -->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>@LABEL@</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>@NODE_BIN@</string>
+    <string>@APP_DIR@/dist/server.js</string>
+  </array>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>PATH</key><string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+    <key>CINES_MCP_HOST</key><string>127.0.0.1</string>
+    <key>CINES_MCP_PORT</key><string>@PORT@</string>
+    <key>NODE_ENV</key><string>production</string>
+  </dict>
+  <key>WorkingDirectory</key>
+  <string>@APP_DIR@</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ThrottleInterval</key>
+  <integer>30</integer>
+  <key>StandardOutPath</key>
+  <string>@LOG_DIR@/cines.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>@LOG_DIR@/cines.err.log</string>
+</dict>
+</plist>

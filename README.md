@@ -17,9 +17,21 @@ no resale, no scraping at scale.
 | Phase | What | State |
 |---|---|---|
 | 0 | Research + capture | done |
-| 1 | Read tools (cinemas, listings, showtimes, upcoming, best showtime) | in progress |
-| 2 | Seat map PNG, seat proposal, hold/release | planned |
+| 1 | Read tools (cinemas, listings, showtimes, upcoming, best showtime) | done |
+| 2a | Seat map PNG, seat proposal, validation | done |
+| 2b | Automated login, seat hold/release | next |
 | 3 | Purchase (PayPal first), approvals, 3DS relay | planned |
+
+Docs: [hub integration](docs/hub-integration.md) · [Mac runbook](docs/mac-runbook.md)
+
+## Quick try
+
+```bash
+npm ci
+npx tsx src/cli.ts probe                                  # checks each Cinépolis operation
+npx tsx src/cli.ts listings cinepolis-parque-toreo-cdmx tomorrow
+npm run dev                                               # MCP on http://127.0.0.1:8686/mcp
+```
 
 ## Safety rules (read before contributing)
 

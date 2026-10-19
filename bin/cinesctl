@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# cinesctl: manage the cines-mx-mcp LaunchAgents on macOS.
+#
+#   cinesctl install [--dry-run]   build, deploy a copy of the app, load both agents
+#   cinesctl uninstall [--dry-run] unload agents and remove plists (keeps config/logs)
+#   cinesctl start|stop|restart    control the server agent
+#   cinesctl status                agent state + /healthz + MCP tool count
+#   cinesctl health                run the health check now (alerts on change)
+#   cinesctl logs [n]              tail the logs
+#   cinesctl render                print rendered plists (no changes)
+#
+# Env: NODE_BIN (Node >= 22.13), CINES_MCP_PORT (default 8686), CINES_HOME (tests).
+set -euo pipefail
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+H="${CINES_HOME:-$HOME}"
+LABEL_MCP="com.jdrami.cines-mcp"
+LABEL_HEALTH="com.jdrami.cines-health"
+AGENTS_DIR="$H/Library/LaunchAgents"
+APP_DIR="$H/Library/Application Support/cines-mx/app"
+LOG_DIR="$H/Library/Logs/cines-mx"
+CONFIG_DIR="$H/.config/cines-mx"
+PORT="${CINES_MCP_PORT:-8686}"
+DRY=0
+for a in "$@"; do [ "$a" = "--dry-run" ] && DRY=1; done
+
+log() { printf '[cines] %s\n' "$*"; }
+die() { printf '[cines] error: %s\n' "$*" >&2; exit 1; }
+run() { if [ "$DRY" = 1 ]; then printf '[dry-run] %s\n' "$*"; else "$@"; fi; }
+
+# Load NODE_BIN / CINES_MCP_PORT overrides from the config file if present.
+if [ -f "$CONFIG_DIR/cines.env" ]; then
+  # shellcheck disable=SC1091
+  set -a; . "$CONFIG_DIR/cines.env"; set +a
+  PORT="${CINES_MCP_PORT:-$PORT}"
+fi
+
+node_ok() { # $1 = node path; true if version >= 22.13
+  local v
+  v="$("$1" -p 'process.versions.node' 2>/dev/null)" || return 1
+  local maj="${v%%.*}" rest="${v#*.}"; local min="${rest%%.*}"
+  [ "$maj" -gt 22 ] || { [ "$maj" -eq 22 ] && [ "$min" -ge 13 ]; }
+}
+
+pick_node() {
+  local c
+  if [ -n "${NODE_BIN:-}" ]; then node_ok "$NODE_BIN" || die "NODE_BIN=$NODE_BIN is not Node >= 22.13"; printf '%s' "$NODE_BIN"; return; fi
+  for c in /opt/homebrew/bin/node /usr/local/bin/node; do
+    if [ -x "$c" ] && node_ok "$c"; then printf '%s' "$c"; return; fi
+  done
+  c="$(command -v node || true)"
+  [ -n "$c" ] && node_ok "$c" || die "no Node >= 22.13 found; set NODE_BIN in $CONFIG_DIR/cines.env"
+  case "$c" in
+    */.nvm/*|*/.fnm/*|*/.volta/*|*/mise/installs/*|*/asdf/*)
+      log "warning: $c is a version-manager path that may disappear on upgrade; set NODE_BIN to a stable path" >&2 ;;
+  esac
+  printf '%s' "$c"
+}
+
+render() { # $1 template, $2 label, $3 node
+  sed -e "s|@LABEL@|$2|g" -e "s|@NODE_BIN@|$3|g" -e "s|@APP_DIR@|$APP_DIR|g" \
+      -e "s|@LOG_DIR@|$LOG_DIR|g" -e "s|@PORT@|$PORT|g" "$1"
+}
+
+domain() { printf 'gui/%s' "$(id -u)"; }
+
+loaded() { launchctl print "$(domain)/$1" >/dev/null 2>&1; }
+
+bootout() { if loaded "$1"; then run launchctl bootout "$(domain)/$1" || true; fi; }
+
+deploy_app() {
+  local node="$1"
+  log "building"
+  (cd "$REPO" && run npm run -s build)
+  log "deploying app copy to $APP_DIR"
+  run mkdir -p "$APP_DIR" "$LOG_DIR" "$CONFIG_DIR"
+  run chmod 700 "$CONFIG_DIR"
+  run rm -rf "$APP_DIR/dist"
+  run cp -R "$REPO/dist" "$APP_DIR/dist"
+  run cp "$REPO/package.json" "$REPO/package-lock.json" "$REPO/.npmrc" "$APP_DIR/"
+  (cd "$APP_DIR" 2>/dev/null || cd "$REPO"; run env PATH="$(dirname "$node"):$PATH" npm ci --omit=dev --no-audit --no-fund --silent)
+}
+
+cmd_install() {
+  [ "$(uname)" = Darwin ] || [ "$DRY" = 1 ] || die "macOS only"
+  local node; node="$(pick_node)"
+  log "node: $node ($("$node" -v))"
+  deploy_app "$node"
+  run mkdir -p "$AGENTS_DIR"
+  for pair in "$LABEL_MCP:com.jdrami.cines-mcp.plist.in" "$LABEL_HEALTH:com.jdrami.cines-health.plist.in"; do
+    local label="${pair%%:*}" tpl="$REPO/launchd/${pair#*:}" dst="$AGENTS_DIR/${pair%%:*}.plist"
+    bootout "$label"
+    if [ "$DRY" = 1 ]; then printf '[dry-run] write %s\n' "$dst"; else render "$tpl" "$label" "$node" >"$dst"; plutil -lint -s "$dst"; fi
+    run launchctl bootstrap "$(domain)" "$dst"
+    log "loaded $label"
+  done
+  [ -f "$CONFIG_DIR/alert.env" ] || log "tip: create $CONFIG_DIR/alert.env (TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID; chmod 600) for health alerts"
+  log "server starting on http://127.0.0.1:$PORT/mcp — check with: cinesctl status"
+}
+
+cmd_uninstall() {
+  for l in "$LABEL_MCP" "$LABEL_HEALTH"; do bootout "$l"; run rm -f "$AGENTS_DIR/$l.plist"; done
+  log "agents removed (config in $CONFIG_DIR and logs in $LOG_DIR kept)"
+}
+
+cmd_status() {
+  local l rc=0
+  for l in "$LABEL_MCP" "$LABEL_HEALTH"; do
+    if loaded "$l"; then
+      printf '%-24s loaded (%s)\n' "$l" "$(launchctl print "$(domain)/$l" | awk -F' = ' '/^\tstate =/{s=$2} /^\tpid =/{p=$2} END{printf "state=%s%s", s, (p? ", pid=" p : "")}')"
+    else printf '%-24s not installed\n' "$l"; fi
+  done
+  if curl -fsS --max-time 5 "http://127.0.0.1:$PORT/healthz" >/dev/null 2>&1; then
+    local n
+    n="$(curl -sS --max-time 10 -X POST -H 'content-type: application/json' -H 'accept: application/json, text/event-stream' \
+      -d '{"jsonrpc":"2.0","id":1,"method":"tools/list","params":{}}' "http://127.0.0.1:$PORT/mcp" | grep -o '"name":"cines_' | wc -l | tr -d ' ')"
+    printf 'MCP http://127.0.0.1:%s/mcp: OK (%s tools)\n' "$PORT" "$n"
+  else
+    printf 'MCP http://127.0.0.1:%s/mcp: UNREACHABLE\n' "$PORT"; rc=1
+  fi
+  return $rc
+}
+
+cmd_health() {
+  local node; node="$(pick_node)"
+  local dir="$APP_DIR"; [ -f "$dir/dist/health.js" ] || dir="$REPO"
+  [ -f "$dir/dist/health.js" ] || (cd "$REPO" && npm run -s build)
+  CINES_MCP_PORT="$PORT" "$node" "$dir/dist/health.js"
+}
+
+case "${1:-}" in
+  install) cmd_install ;;
+  uninstall) cmd_uninstall ;;
+  start) run launchctl kickstart "$(domain)/$LABEL_MCP" ;;
+  stop) run launchctl kill TERM "$(domain)/$LABEL_MCP" ;;
+  restart) run launchctl kickstart -k "$(domain)/$LABEL_MCP" ;;
+  status) cmd_status ;;
+  health) cmd_health ;;
+  logs) tail -n "${2:-40}" "$LOG_DIR"/*.log ;;
+  render) n="$(pick_node)"; render "$REPO/launchd/com.jdrami.cines-mcp.plist.in" "$LABEL_MCP" "$n"; render "$REPO/launchd/com.jdrami.cines-health.plist.in" "$LABEL_HEALTH" "$n" ;;
+  *) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+esac
