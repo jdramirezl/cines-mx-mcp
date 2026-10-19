@@ -62,7 +62,11 @@ nodejs.org installer over Homebrew (Homebrew builds from source).
    `security add-generic-password -s cines-mx-imap -a "<bot mailbox>" -w`
 3. `bin/cinesctl mailbox-test` → expect `IMAP OK`.
 4. `bin/cinesctl login` → a Chrome window with the **bot's own profile** opens;
-   log into Cinépolis with your e-mail and the 6-digit code; it closes itself.
+   log into Cinépolis with **e-mail + 6-digit code** (not Google). **Check
+   first:** open "Mi cuenta" and confirm it is your usual Club Cinépolis account
+   (same points balance and account tickets you see with Google). If it shows an
+   empty/new account, stop and report it: automatic re-login would then need
+   the Google path instead. The window closes itself once logged in.
 5. `bin/cinesctl paypal-login` → log into PayPal in the same profile (tick
    "keep me logged in"), then close the window.
 6. `bin/cinesctl session` → `state: valid`, `hasRefreshToken: true`.
