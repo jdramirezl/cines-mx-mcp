@@ -125,11 +125,36 @@ describe("MCP server", () => {
     expect(() => assertLoopback("127.0.0.1")).not.toThrow();
   });
 
-  it("lists the read tools with read-only annotations", async () => {
+  it("lists the tools, all read-only (nothing here holds or buys)", async () => {
     const { tools } = await client.listTools();
     const names = tools.map((t) => t.name).sort();
-    expect(names).toEqual(["cines_best_showtime", "cines_find_movie", "cines_list_cinemas", "cines_listings", "cines_showtimes", "cines_upcoming"]);
-    expect(tools.every((t) => t.annotations?.readOnlyHint === true)).toBe(true);
+    expect(names).toEqual([
+      "cines_best_showtime",
+      "cines_find_movie",
+      "cines_list_cinemas",
+      "cines_listings",
+      "cines_seat_map",
+      "cines_showtimes",
+      "cines_upcoming",
+      "cines_validate_seats",
+    ]);
+    expect(tools.every((t) => t.annotations?.readOnlyHint === true && t.annotations?.destructiveHint === false)).toBe(true);
+  });
+
+  it("cines_seat_map returns a proposal and a fetchable PNG", async () => {
+    const { value, isError } = await call("cines_seat_map", { showtimeId: "570-102599", tickets: 2 });
+    expect(isError).toBe(false);
+    expect(value.proposal).toHaveLength(2);
+    expect(value.together).toBe(true);
+    expect(value.imageUrl).toMatch(/^http:\/\/127\.0\.0\.1:\d+\/images\/[0-9a-f]{24}\.png$/);
+    const img = await fetch(value.imageUrl);
+    expect(img.headers.get("content-type")).toBe("image/png");
+    const v = await call("cines_validate_seats", { showtimeId: "570-102599", seats: value.proposal.join(","), tickets: 2 });
+    expect(v.value.ok).toBe(true);
+    const bad = await call("cines_validate_seats", { showtimeId: "570-102599", seats: "Z99" });
+    expect(bad.value.ok).toBe(false);
+    const badId = await call("cines_seat_map", { showtimeId: "nope" });
+    expect(badId.value.error.code).toBe("CINES_BAD_REQUEST");
   });
 
   it("cines_list_cinemas returns the profile cinemas", async () => {

@@ -19,6 +19,7 @@ import { ImageStore } from "./images.js";
 import { loadProfile, type Profile } from "./profile.js";
 import type { CinemaProvider } from "./provider.js";
 import { registerReadTools, type ToolContext } from "./tools.js";
+import { registerSeatTools } from "./seatTools.js";
 
 export const VERSION = "0.1.0";
 const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
@@ -36,9 +37,10 @@ export function assertLoopback(host: string): void {
   if (!LOOPBACK.has(host)) throw new Error(`refusing to bind ${host}: cines-mx-mcp only listens on loopback (127.0.0.1)`);
 }
 
-export function buildMcpServer(ctx: ToolContext & { images: ImageStore; baseUrl: string }): McpServer {
+export function buildMcpServer(ctx: ToolContext & { images: ImageStore; baseUrl: () => string }): McpServer {
   const server = new McpServer({ name: "cines-mx-mcp", version: VERSION });
   registerReadTools(server, ctx);
+  registerSeatTools(server, ctx);
   return server;
 }
 
@@ -92,7 +94,7 @@ export async function startServer(opts: ServerOptions = {}): Promise<{ server: S
       if (req.method !== "POST") return send(res, 405, { error: { code: "CINES_BAD_REQUEST", message: "use POST", retryable: false } });
       const body = await readBody(req);
       // Stateless: a fresh server + transport per request (SDK-recommended pattern).
-      const mcp = buildMcpServer({ ...ctx, images, baseUrl });
+      const mcp = buildMcpServer({ ...ctx, images, baseUrl: () => baseUrl });
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
       res.on("close", () => {
         void transport.close();

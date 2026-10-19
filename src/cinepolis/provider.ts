@@ -2,17 +2,21 @@
 import { TtlCache } from "../cache.js";
 import type { Cinema, Movie, Showtime } from "../domain.js";
 import { CinesError } from "../errors.js";
-import type { CinemaProvider, MovieCategory, ShowtimeRef, TicketType } from "../provider.js";
+import type { CinemaProvider, MovieCategory, SeatQuery, ShowtimeRef, TicketType } from "../provider.js";
+import type { SeatLayout } from "../seats.js";
 import { GraphQLClient } from "./client.js";
 import { DEFAULT_TZ, mapBillboard, mapCinema, mapMovie } from "./mappers.js";
-import { BILLBOARD_BY_CINEMA, BILLBOARD_BY_MOVIE, CINEMAS, MOVIE_DETAIL, MOVIES_LIST, TICKETS } from "./queries.js";
-import { BillboardSchema, CinemasSchema, MovieSchema, MoviesSchema, parse, TicketsSchema } from "./schemas.js";
+import { BILLBOARD_BY_CINEMA, BILLBOARD_BY_MOVIE, CINEMAS, MOVIE_DETAIL, MOVIES_LIST, SEATS, TICKETS } from "./queries.js";
+import { BillboardSchema, CinemasSchema, MovieSchema, MoviesSchema, parse, SeatsSchema, TicketsSchema } from "./schemas.js";
+import { mapSeatLayout } from "./seats.js";
 import { z } from "zod";
 
 export interface CinepolisProviderOptions {
   client?: GraphQLClient;
   /** Listing cache TTL (default 10 min). */
   ttlMs?: number;
+  /** Seat map cache TTL (default 45 s). */
+  seatTtlMs?: number;
   now?: () => number;
 }
 
@@ -27,7 +31,10 @@ export class CinepolisProvider implements CinemaProvider {
   constructor(opts: CinepolisProviderOptions = {}) {
     this.client = opts.client ?? new GraphQLClient();
     this.cache = new TtlCache(opts.ttlMs ?? 10 * 60_000, opts.now);
+    this.seatCache = new TtlCache(opts.seatTtlMs ?? 45_000, opts.now);
   }
+
+  private readonly seatCache: TtlCache<SeatLayout>;
 
   private cached<T>(key: string, load: () => Promise<T>): Promise<T> {
     return this.cache.get(key, load) as Promise<T>;
@@ -143,6 +150,18 @@ export class CinepolisProvider implements CinemaProvider {
       const m = parse(MovieSchema, data, "Movie").movie;
       return m ? mapMovie(m) : undefined;
     });
+  }
+
+  async getSeatLayout(q: SeatQuery): Promise<SeatLayout> {
+    return this.seatCache.get(`seats|${q.cinemaVistaId}|${q.sessionId}|${q.experience ?? ""}`, async () => {
+      const data = await this.client.call(SEATS, {
+        cinemaVistaId: q.cinemaVistaId,
+        sessionId: q.sessionId,
+        countryId: this.client.countryId,
+        experience: q.experience ?? "TRADICIONAL",
+      });
+      return mapSeatLayout(parse(SeatsSchema, data, "Seats"), q.requireContiguous ?? false);
+    }, { staleOnError: false });
   }
 
   async getTickets(ref: ShowtimeRef): Promise<TicketType[]> {
