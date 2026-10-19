@@ -1,0 +1,154 @@
+{
+ "cinemasById": {
+  "edges": [
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-parque-toreo-cdmx",
+     "lat": "19.454352",
+     "lng": "-99.219165",
+     "name": "Parque Toreo",
+     "type": "TRADICIONAL",
+     "cityId": "cdmx",
+     "vistaId": "570",
+     "regionId": "cdmx-poniente",
+     "timezone": "America/Mexico_City",
+     "businessType": "NEON",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   },
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-plaza-carso-cdmx",
+     "lat": "19.441",
+     "lng": "-99.202",
+     "name": "Plaza Carso",
+     "type": "TRADICIONAL",
+     "cityId": "cdmx",
+     "vistaId": "419",
+     "regionId": "cdmx-poniente",
+     "timezone": "America/Mexico_City",
+     "businessType": "TRADICIONAL",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   },
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-satelite-cdmx",
+     "lat": "19.51",
+     "lng": "-99.233",
+     "name": "Satélite",
+     "type": "TRADICIONAL",
+     "cityId": "cdmx",
+     "vistaId": "158",
+     "regionId": "cdmx-norte",
+     "timezone": "America/Mexico_City",
+     "businessType": "NEON",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   },
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-vip-miyana-polanco-cdmx",
+     "lat": "19.438951",
+     "lng": "-99.199661",
+     "name": "Miyana Polanco",
+     "type": "VIP",
+     "cityId": "cdmx",
+     "vistaId": "673",
+     "regionId": "cdmx-poniente",
+     "timezone": "America/Mexico_City",
+     "businessType": "VIP",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   },
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-vip-parque-toreo-cdmx",
+     "lat": "19.454352",
+     "lng": "-99.219165",
+     "name": "Parque Toreo",
+     "type": "VIP",
+     "cityId": "cdmx",
+     "vistaId": "656",
+     "regionId": "cdmx-poniente",
+     "timezone": "America/Mexico_City",
+     "businessType": "VIP",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   },
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-vip-plaza-carso-cdmx",
+     "lat": "19.441",
+     "lng": "-99.202",
+     "name": "Plaza Carso",
+     "type": "VIP",
+     "cityId": "cdmx",
+     "vistaId": "446",
+     "regionId": "cdmx-poniente",
+     "timezone": "America/Mexico_City",
+     "businessType": "VIP",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   },
+   {
+    "cursor": "",
+    "node": {
+     "id": "cinepolis-vip-plaza-satelite-cdmx",
+     "lat": "19.510061",
+     "lng": "-99.233435",
+     "name": "Plaza Satélite",
+     "type": "VIP",
+     "cityId": "cdmx",
+     "vistaId": "900",
+     "regionId": "cdmx-norte",
+     "timezone": "America/Mexico_City",
+     "businessType": "VIP",
+     "settings": {
+      "requireContiguousSeating": false,
+      "__typename": "CinemaSettings"
+     },
+     "__typename": "Cinema"
+    },
+    "__typename": "CinemaEdge"
+   }
+  ],
+  "__typename": "CinemaConnection"
+ }
+}

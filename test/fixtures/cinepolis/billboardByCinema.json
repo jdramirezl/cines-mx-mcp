@@ -1,0 +1,2822 @@
+{
+ "variables": {
+  "cinemaId": "cinepolis-parque-toreo-cdmx",
+  "countryId": "MX",
+  "isAbsoluteExperiencePath": true,
+  "timezone": "America/Mexico_City"
+ },
+ "data": {
+  "billboardByCinema": {
+   "dates": [
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-21"
+   ],
+   "schedules": [
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "digger",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103688",
+           "datetime": "2026-10-19T21:30:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033205",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103723",
+           "datetime": "2026-10-20T21:30:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033205",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103756",
+           "datetime": "2026-10-21T21:30:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033205",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "la-isla-de-las-munecas",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103692",
+           "datetime": "2026-10-19T17:15:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033356",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103693",
+           "datetime": "2026-10-19T20:15:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033356",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103727",
+           "datetime": "2026-10-20T17:15:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033356",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103728",
+           "datetime": "2026-10-20T20:15:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033356",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103760",
+           "datetime": "2026-10-21T17:15:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033356",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103761",
+           "datetime": "2026-10-21T20:15:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033356",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "super-canino",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103699",
+           "datetime": "2026-10-19T16:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103700",
+           "datetime": "2026-10-19T19:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103733",
+           "datetime": "2026-10-20T13:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103734",
+           "datetime": "2026-10-20T16:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103735",
+           "datetime": "2026-10-20T19:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103766",
+           "datetime": "2026-10-21T13:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103767",
+           "datetime": "2026-10-21T16:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103768",
+           "datetime": "2026-10-21T19:45:00",
+           "screen": "9",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/SJ/Es/SJ.svg",
+            "name": "SJ",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033640",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "sacrificio-los-elegidos",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103684",
+           "datetime": "2026-10-19T17:30:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00033637",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103685",
+           "datetime": "2026-10-19T20:30:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00033637",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103719",
+           "datetime": "2026-10-20T17:30:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00033637",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103720",
+           "datetime": "2026-10-20T20:30:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00033637",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103752",
+           "datetime": "2026-10-21T17:30:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00033637",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103753",
+           "datetime": "2026-10-21T20:30:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00033637",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "el-laberinto-del-fauno",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Formats/3D/3D_2.svg",
+            "name": "3D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103088",
+           "datetime": "2026-10-19T18:00:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033242",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Formats/3D/3D_2.svg",
+            "name": "3D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103089",
+           "datetime": "2026-10-19T21:00:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033242",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Formats/3D/3D_2.svg",
+            "name": "3D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103098",
+           "datetime": "2026-10-20T18:00:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033242",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Formats/3D/3D_2.svg",
+            "name": "3D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103099",
+           "datetime": "2026-10-20T21:00:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033242",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Formats/3D/3D_2.svg",
+            "name": "3D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103096",
+           "datetime": "2026-10-21T18:00:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033242",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Formats/3D/3D_2.svg",
+            "name": "3D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103097",
+           "datetime": "2026-10-21T21:00:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033242",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "hope-el-primer-impacto",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103709",
+           "datetime": "2026-10-19T20:00:00",
+           "screen": "12",
+           "experience": null,
+           "movieVistaId": "HO00033367",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103743",
+           "datetime": "2026-10-20T14:15:00",
+           "screen": "12",
+           "experience": null,
+           "movieVistaId": "HO00033367",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103744",
+           "datetime": "2026-10-20T20:00:00",
+           "screen": "12",
+           "experience": null,
+           "movieVistaId": "HO00033367",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103776",
+           "datetime": "2026-10-21T14:15:00",
+           "screen": "12",
+           "experience": null,
+           "movieVistaId": "HO00033367",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103777",
+           "datetime": "2026-10-21T20:00:00",
+           "screen": "12",
+           "experience": null,
+           "movieVistaId": "HO00033367",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "clayface",
+     "dates": [
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102605",
+           "datetime": "2026-10-21T19:10:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033521",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102606",
+           "datetime": "2026-10-21T21:45:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033521",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "la-caida-de-la-ballena",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103705",
+           "datetime": "2026-10-19T16:15:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033675",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103712",
+           "datetime": "2026-10-19T18:30:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033634",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103707",
+           "datetime": "2026-10-19T21:45:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033675",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103711",
+           "datetime": "2026-10-19T15:30:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033577",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103745",
+           "datetime": "2026-10-20T12:15:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033634",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103740",
+           "datetime": "2026-10-20T16:15:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033675",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103747",
+           "datetime": "2026-10-20T18:30:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033634",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103742",
+           "datetime": "2026-10-20T21:45:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033675",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103746",
+           "datetime": "2026-10-20T15:30:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033577",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103778",
+           "datetime": "2026-10-21T12:15:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033634",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103773",
+           "datetime": "2026-10-21T16:15:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033675",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103780",
+           "datetime": "2026-10-21T18:30:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033634",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103775",
+           "datetime": "2026-10-21T21:45:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033675",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103779",
+           "datetime": "2026-10-21T15:30:00",
+           "screen": "13",
+           "experience": null,
+           "movieVistaId": "HO00033577",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "street-fighter",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103701",
+           "datetime": "2026-10-19T14:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102594",
+           "datetime": "2026-10-19T16:30:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103702",
+           "datetime": "2026-10-19T17:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103703",
+           "datetime": "2026-10-19T20:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102596",
+           "datetime": "2026-10-19T22:00:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103706",
+           "datetime": "2026-10-19T18:45:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033383",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102595",
+           "datetime": "2026-10-19T19:00:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00032896",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103739",
+           "datetime": "2026-10-20T13:15:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033384",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102597",
+           "datetime": "2026-10-20T13:45:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103736",
+           "datetime": "2026-10-20T14:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102598",
+           "datetime": "2026-10-20T16:30:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103737",
+           "datetime": "2026-10-20T17:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103738",
+           "datetime": "2026-10-20T20:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102600",
+           "datetime": "2026-10-20T22:00:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103741",
+           "datetime": "2026-10-20T18:45:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033383",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102599",
+           "datetime": "2026-10-20T19:00:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00032896",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103772",
+           "datetime": "2026-10-21T13:15:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033384",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102601",
+           "datetime": "2026-10-21T13:45:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103769",
+           "datetime": "2026-10-21T14:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102602",
+           "datetime": "2026-10-21T16:30:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103770",
+           "datetime": "2026-10-21T17:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103771",
+           "datetime": "2026-10-21T20:45:00",
+           "screen": "10",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/XE/Es/XE.svg",
+            "name": "XE",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033382",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102604",
+           "datetime": "2026-10-21T22:00:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00033376",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103774",
+           "datetime": "2026-10-21T18:45:00",
+           "screen": "11",
+           "experience": {
+            "icon": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Country_Experiences/4DX/Es/4DX.svg",
+            "name": "4DX",
+            "__typename": "ResourceStatic"
+           },
+           "movieVistaId": "HO00033383",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "102603",
+           "datetime": "2026-10-21T19:00:00",
+           "screen": "6",
+           "experience": null,
+           "movieVistaId": "HO00032896",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "tadeo-el-explorador-y-la-lampara-maravillosa",
+     "dates": [
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103718",
+           "datetime": "2026-10-20T14:00:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00032602",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103751",
+           "datetime": "2026-10-21T14:00:00",
+           "screen": "3",
+           "experience": null,
+           "movieVistaId": "HO00032602",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "el-corazon-de-la-bestia",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103695",
+           "datetime": "2026-10-19T15:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033129",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103717",
+           "datetime": "2026-10-20T14:30:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033129",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103730",
+           "datetime": "2026-10-20T15:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033129",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103750",
+           "datetime": "2026-10-21T14:30:00",
+           "screen": "2",
+           "experience": null,
+           "movieVistaId": "HO00033129",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103763",
+           "datetime": "2026-10-21T15:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033129",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "un-mal-partido",
+     "dates": [
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103721",
+           "datetime": "2026-10-20T12:30:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033274",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103724",
+           "datetime": "2026-10-20T13:30:00",
+           "screen": "5",
+           "experience": null,
+           "movieVistaId": "HO00033274",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103754",
+           "datetime": "2026-10-21T12:30:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033274",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103757",
+           "datetime": "2026-10-21T13:30:00",
+           "screen": "5",
+           "experience": null,
+           "movieVistaId": "HO00033274",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "tu-nombre",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103687",
+           "datetime": "2026-10-19T15:00:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033068",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103722",
+           "datetime": "2026-10-20T15:00:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033068",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103755",
+           "datetime": "2026-10-21T15:00:00",
+           "screen": "4",
+           "experience": null,
+           "movieVistaId": "HO00033068",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "verity-la-sombra-de-un-engano",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103679",
+           "datetime": "2026-10-19T15:45:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033029",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103726",
+           "datetime": "2026-10-20T12:00:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033180",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103714",
+           "datetime": "2026-10-20T15:45:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033029",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103759",
+           "datetime": "2026-10-21T12:00:00",
+           "screen": "7",
+           "experience": null,
+           "movieVistaId": "HO00033180",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        },
+        {
+         "language": "SUB",
+         "displayLanguage": "SUBTITULADA",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103749",
+           "datetime": "2026-10-21T15:45:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033029",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "madre-siniestra",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103696",
+           "datetime": "2026-10-19T18:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103681",
+           "datetime": "2026-10-19T22:10:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103713",
+           "datetime": "2026-10-20T13:00:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103731",
+           "datetime": "2026-10-20T18:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103716",
+           "datetime": "2026-10-20T22:10:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103748",
+           "datetime": "2026-10-21T13:00:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103764",
+           "datetime": "2026-10-21T18:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033358",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "resident-evil-noche-cero",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103680",
+           "datetime": "2026-10-19T19:30:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103697",
+           "datetime": "2026-10-19T21:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103729",
+           "datetime": "2026-10-20T12:45:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103715",
+           "datetime": "2026-10-20T19:30:00",
+           "screen": "1",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103732",
+           "datetime": "2026-10-20T21:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103762",
+           "datetime": "2026-10-21T12:45:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          },
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103765",
+           "datetime": "2026-10-21T21:15:00",
+           "screen": "8",
+           "experience": null,
+           "movieVistaId": "HO00033034",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    },
+    {
+     "cinemaId": "cinepolis-parque-toreo-cdmx",
+     "cityId": "cdmx",
+     "movieId": "cristiada",
+     "dates": [
+      {
+       "date": "2026-10-19",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103690",
+           "datetime": "2026-10-19T16:00:00",
+           "screen": "5",
+           "experience": null,
+           "movieVistaId": "HO00033646",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-20",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103725",
+           "datetime": "2026-10-20T16:00:00",
+           "screen": "5",
+           "experience": null,
+           "movieVistaId": "HO00033646",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      },
+      {
+       "date": "2026-10-21",
+       "languages": [
+        {
+         "language": "ESP",
+         "displayLanguage": "ESPAÑOL",
+         "showtimes": [
+          {
+           "format": {
+            "icon": "",
+            "name": "2D",
+            "__typename": "ResourceStatic"
+           },
+           "sessionId": "103758",
+           "datetime": "2026-10-21T16:00:00",
+           "screen": "5",
+           "experience": null,
+           "movieVistaId": "HO00033646",
+           "cinemaVistaId": "570",
+           "alerts": null,
+           "availability": "",
+           "isAllocatedSeating": true,
+           "__typename": "ShowtimesInfo"
+          }
+         ],
+         "__typename": "LanguagesInfo"
+        }
+       ],
+       "__typename": "DatesInfo"
+      }
+     ],
+     "__typename": "SchedulesInfo"
+    }
+   ],
+   "__typename": "Billboard"
+  }
+ }
+}

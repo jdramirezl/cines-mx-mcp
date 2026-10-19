@@ -1,0 +1,149 @@
+{
+ "variables": {
+  "cinemaVistaId": "570",
+  "sessionId": "102599",
+  "countryId": "MX"
+ },
+ "data": {
+  "tickets": [
+   {
+    "areaCategoryCode": "0000000001",
+    "tickets": [
+     {
+      "id": "5026",
+      "ticketTypeCode": "2050",
+      "description": "Que Oferton 2026",
+      "ticketDescription": null,
+      "priceInCents": 4500,
+      "bookingFee": 700,
+      "taxInCents": 621,
+      "displaySequence": 0,
+      "quantityAvailablePerOrder": 10,
+      "type": "general",
+      "isPackageTicket": false,
+      "feeTaxes": {
+       "cgst": 0,
+       "sgst": 0,
+       "cgstRate": 0,
+       "sgstRate": 0,
+       "__typename": "FeeTaxes"
+      },
+      "billingInfo": {
+       "gstin": "",
+       "hsn": 0,
+       "sac": "",
+       "fssai": "",
+       "__typename": "BillingInfo"
+      },
+      "packageContent": {
+       "tickets": [],
+       "concessions": [],
+       "__typename": "PackageContent"
+      },
+      "__typename": "TicketsData"
+     },
+     {
+      "id": "2223",
+      "ticketTypeCode": "0136",
+      "description": "Admision General",
+      "ticketDescription": null,
+      "priceInCents": 9200,
+      "bookingFee": 700,
+      "taxInCents": 1269,
+      "displaySequence": 1,
+      "quantityAvailablePerOrder": 10,
+      "type": "general",
+      "isPackageTicket": false,
+      "feeTaxes": {
+       "cgst": 0,
+       "sgst": 0,
+       "cgstRate": 0,
+       "sgstRate": 0,
+       "__typename": "FeeTaxes"
+      },
+      "billingInfo": {
+       "gstin": "",
+       "hsn": 0,
+       "sac": "",
+       "fssai": "",
+       "__typename": "BillingInfo"
+      },
+      "packageContent": {
+       "tickets": [],
+       "concessions": [],
+       "__typename": "PackageContent"
+      },
+      "__typename": "TicketsData"
+     },
+     {
+      "id": "2224",
+      "ticketTypeCode": "0137",
+      "description": "Niños",
+      "ticketDescription": null,
+      "priceInCents": 7400,
+      "bookingFee": 700,
+      "taxInCents": 1021,
+      "displaySequence": 2,
+      "quantityAvailablePerOrder": 10,
+      "type": "general",
+      "isPackageTicket": false,
+      "feeTaxes": {
+       "cgst": 0,
+       "sgst": 0,
+       "cgstRate": 0,
+       "sgstRate": 0,
+       "__typename": "FeeTaxes"
+      },
+      "billingInfo": {
+       "gstin": "",
+       "hsn": 0,
+       "sac": "",
+       "fssai": "",
+       "__typename": "BillingInfo"
+      },
+      "packageContent": {
+       "tickets": [],
+       "concessions": [],
+       "__typename": "PackageContent"
+      },
+      "__typename": "TicketsData"
+     },
+     {
+      "id": "2225",
+      "ticketTypeCode": "0138",
+      "description": "3 Era Edad",
+      "ticketDescription": null,
+      "priceInCents": 7400,
+      "bookingFee": 700,
+      "taxInCents": 1021,
+      "displaySequence": 3,
+      "quantityAvailablePerOrder": 10,
+      "type": "general",
+      "isPackageTicket": false,
+      "feeTaxes": {
+       "cgst": 0,
+       "sgst": 0,
+       "cgstRate": 0,
+       "sgstRate": 0,
+       "__typename": "FeeTaxes"
+      },
+      "billingInfo": {
+       "gstin": "",
+       "hsn": 0,
+       "sac": "",
+       "fssai": "",
+       "__typename": "BillingInfo"
+      },
+      "packageContent": {
+       "tickets": [],
+       "concessions": [],
+       "__typename": "PackageContent"
+      },
+      "__typename": "TicketsData"
+     }
+    ],
+    "__typename": "AreasTicket"
+   }
+  ]
+ }
+}

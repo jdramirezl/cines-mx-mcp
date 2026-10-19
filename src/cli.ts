@@ -5,8 +5,10 @@
  *   cines probe                 check each Cinépolis operation from this machine
  */
 import { GraphQLClient } from "./cinepolis/client.js";
+import { CinepolisProvider } from "./cinepolis/provider.js";
 import { BILLBOARD_BY_CINEMA, CINEMAS, SEATS, TICKETS, type Operation } from "./cinepolis/queries.js";
 import { toErrorShape } from "./errors.js";
+import { addDays, localDate } from "./time.js";
 
 const TZ = "America/Mexico_City";
 
@@ -97,8 +99,25 @@ async function main(argv: string[]): Promise<number> {
       for (const r of rows) console.log(`${r.ok ? "OK  " : "FAIL"} ${r.op.padEnd(10)} ${String(r.ms).padStart(5)} ms  ${r.note}`);
       return rows.every((r) => r.ok) ? 0 : 1;
     }
+    case "listings": {
+      const cinemaId = rest[0] ?? "cinepolis-parque-toreo-cdmx";
+      const tz = "America/Mexico_City";
+      const today = localDate(new Date(), tz);
+      const date = rest[1] === "tomorrow" ? addDays(today, 1) : rest[1] && rest[1] !== "today" ? rest[1] : today;
+      const p = new CinepolisProvider();
+      const [movies, showtimes] = await Promise.all([p.getMovies("now-playing", [cinemaId]), p.getShowtimesByCinema(cinemaId)]);
+      const title = new Map(movies.map((m) => [m.id, `${m.title} (${m.rating})`]));
+      const byMovie = new Map<string, string[]>();
+      for (const s of showtimes.filter((x) => x.date === date)) {
+        const tag = [s.time, s.language, s.experience ?? s.format, s.availability === "full" ? "AGOTADO" : ""].filter(Boolean).join(" ");
+        byMovie.set(s.movieId, [...(byMovie.get(s.movieId) ?? []), tag]);
+      }
+      console.log(`${cinemaId} ${date}: ${byMovie.size} movies`);
+      for (const [id, tags] of byMovie) console.log(`  ${title.get(id) ?? id}\n    ${tags.join(" | ")}`);
+      return 0;
+    }
     default:
-      console.error("usage: cines probe [cinemaId]");
+      console.error("usage: cines probe [cinemaId] | cines listings [cinemaId] [today|tomorrow|YYYY-MM-DD]");
       return 2;
   }
 }

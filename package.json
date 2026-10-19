@@ -23,7 +23,8 @@
     "redact": "tsx scripts/redact-har.ts",
     "check-secrets": "tsx scripts/check-secrets.ts",
     "check": "npm run typecheck && npm run lint && npm test && npm run check-secrets",
-    "prepush": "npm run check"
+    "prepush": "npm run check",
+    "fixtures": "tsx scripts/make-fixtures.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.1",

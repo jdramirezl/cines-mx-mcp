@@ -1,0 +1,171 @@
+{
+ "variables": {
+  "countryId": "MX",
+  "id": "street-fighter",
+  "isAbsoluteMediaPath": true
+ },
+ "data": {
+  "movie": {
+   "id": "street-fighter",
+   "type": "",
+   "countryId": "MX",
+   "name": "Street Fighter",
+   "originalName": "Street Fighter",
+   "distributor": "Paramount",
+   "rating": "B",
+   "position": "1",
+   "ratingDescription": "Para adolescentes de 12 años en adelante.\nLa narrativa puede ser compleja. Presenta cierto grado de violencia, no extrema, por motivos específicos y no vinculada con lo sexual, poniendo en claro sus consecuencias. Los desnudos son breves y no detallados y las escenas sexuales sólo sugeridas. Se puede tratar el tema de las adicciones y las drogas pero sin exhibir su consumo. La violencia verbal no puede ser extrema.",
+   "genre": [
+    "DRAMA",
+    "ACCIÓN"
+   ],
+   "synopsis": "Ambientada en 1993, los distanciados luchadores callejeros Ryu (Andrew Koji) y Ken Masters (Noah Centineo) se ven obligados a volver al combate cuando la misteriosa Chun-Li (Callina Liang) los recluta para el próximo Torneo Mundial de Luchadores: un brutal enfrentamiento de puños, destino y furia. Pero detrás de esta batalla real se esconde una conspiración mortal que los obliga a enfrentarse entre sí y a los demonios de su pasado. Y si no lo hacen, ¡GAME OVER!",
+   "length": "119 min",
+   "availableForSale": true,
+   "alerts": [],
+   "releaseDate": "2026-10-15T06:00",
+   "tags": [],
+   "media": [
+    {
+     "resource": "",
+     "type": "image",
+     "code": "poster",
+     "sizes": {
+      "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_720x1022_2.jpg",
+      "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_107x160_2.jpg",
+      "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_80x80_2.jpg",
+      "__typename": "SizeInfo"
+     },
+     "__typename": "MediaInfo"
+    },
+    {
+     "resource": "",
+     "type": "image",
+     "code": "movie_card",
+     "sizes": {
+      "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_movie_card_900x900_1.jpg",
+      "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_movie_card_900x900_1.jpg",
+      "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_movie_card_900x900_1.jpg",
+      "__typename": "SizeInfo"
+     },
+     "__typename": "MediaInfo"
+    },
+    {
+     "resource": "",
+     "type": "image",
+     "code": "header_movie_detail",
+     "sizes": {
+      "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/[TOKEN:1f270754].jpg",
+      "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/[TOKEN:1f270754].jpg",
+      "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/[TOKEN:1f270754].jpg",
+      "__typename": "SizeInfo"
+     },
+     "__typename": "MediaInfo"
+    },
+    {
+     "resource": "",
+     "type": "image",
+     "code": "header_purchase_flow",
+     "sizes": {
+      "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/[TOKEN:f299aede].jpg",
+      "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/[TOKEN:f299aede].jpg",
+      "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/[TOKEN:f299aede].jpg",
+      "__typename": "SizeInfo"
+     },
+     "__typename": "MediaInfo"
+    },
+    {
+     "resource": "",
+     "type": "video",
+     "code": "trailer_mp4",
+     "sizes": {
+      "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/6a870c70166c5-street-fighter.mp4",
+      "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/6a870c70166c5-street-fighter.mp4",
+      "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/6a870c70166c5-street-fighter.mp4",
+      "__typename": "SizeInfo"
+     },
+     "__typename": "MediaInfo"
+    }
+   ],
+   "cities": [],
+   "cinemas": [
+    "gran-plaza-los-soles-zitacuaro",
+    "cinepolis-paseo-del-rio-san-juan-del-rio",
+    "cinepolis-centro-magno-guadalajara",
+    "cinepolis-universidad-cdmx",
+    "cinepolis-mitikah-cdmx",
+    "cinepolis-tampico",
+    "cinepolis-grand-plaza-toluca",
+    "cinepolis-san-vicente-las-palmas-nuevo-vallarta",
+    "cinepolis-vip-altama-tampico",
+    "cinepolis-galerias-hipodromo-tijuana"
+   ],
+   "categories": [
+    "now-playing"
+   ],
+   "experiences": [
+    {
+     "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+     "name": "Tradicional",
+     "__typename": "ResourceStatic"
+    }
+   ],
+   "cast": {
+    "actors": [
+     {
+      "name": "Noah Centineo",
+      "description": "",
+      "nameInMovie": "",
+      "moviesTotal": 0,
+      "image": {
+       "resource": "",
+       "sizes": {
+        "large": "https://pimcore-content.cinepolis.com/assets/Cast/NoahCentineo/Noah_Centineo.jpg",
+        "medium": "https://pimcore-content.cinepolis.com/assets/Cast/NoahCentineo/Noah_Centineo.jpg",
+        "__typename": "SizeInfo"
+       },
+       "__typename": "MediaInfo"
+      },
+      "__typename": "CastShowInfo"
+     },
+     {
+      "name": "Andrew Koji",
+      "description": "",
+      "nameInMovie": "",
+      "moviesTotal": 0,
+      "image": {
+       "resource": "",
+       "sizes": {
+        "large": "https://pimcore-content.cinepolis.com/assets/Cast/AndrewKoji/Andrew_Koji.jpg",
+        "medium": "https://pimcore-content.cinepolis.com/assets/Cast/AndrewKoji/Andrew_Koji.jpg",
+        "__typename": "SizeInfo"
+       },
+       "__typename": "MediaInfo"
+      },
+      "__typename": "CastShowInfo"
+     }
+    ],
+    "directors": [
+     {
+      "name": "Kitao Sakurai",
+      "description": "",
+      "nameInMovie": "",
+      "moviesTotal": 0,
+      "image": {
+       "resource": "",
+       "sizes": {
+        "large": "https://pimcore-content.cinepolis.com/assets/Cast/KitaoSakurai/Kitao_Sakurai.jpg",
+        "medium": "https://pimcore-content.cinepolis.com/assets/Cast/KitaoSakurai/Kitao_Sakurai.jpg",
+        "__typename": "SizeInfo"
+       },
+       "__typename": "MediaInfo"
+      },
+      "__typename": "CastShowInfo"
+     }
+    ],
+    "producers": []
+   },
+   "__typename": "Movie"
+  }
+ }
+}

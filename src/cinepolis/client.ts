@@ -95,7 +95,11 @@ export class GraphQLClient {
       if (codes.includes("GRAPHQL_VALIDATION_FAILED") || /Cannot query field|Unknown argument|Unknown type/i.test(msg)) {
         throw new CinesError("CINES_SCHEMA_CHANGED", `Cinépolis API changed (${op.operationName}): ${msg}`);
       }
-      if (/not found|no existe/i.test(msg)) throw new CinesError("CINES_NOT_FOUND", `${op.operationName}: ${msg}`);
+      if (/not found|no existe|no est[aá] disponible/i.test(msg)) throw new CinesError("CINES_NOT_FOUND", `${op.operationName}: ${msg}`);
+      const classes = json.errors.map((e) => (e.extensions as { classification?: string } | undefined)?.classification ?? "");
+      if (classes.includes("INTERNAL_ERROR") || (!json.data && /unexpected error|try again/i.test(msg))) {
+        throw new CinesError("CINES_UNAVAILABLE", `Cinépolis failed to answer ${op.operationName}; try again later`, { retryable: true });
+      }
       if (!json.data) throw new CinesError("CINES_BAD_REQUEST", `${op.operationName}: ${msg}`);
     }
     if (json.data === undefined || json.data === null) {

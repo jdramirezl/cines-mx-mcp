@@ -1,0 +1,747 @@
+{
+ "variables": {
+  "category": "now-playing",
+  "cinemas": "cinepolis-parque-toreo-cdmx",
+  "limit": 100,
+  "countryId": "MX",
+  "isAbsoluteMediaPath": true
+ },
+ "data": {
+  "movies": {
+   "pageInfo": {
+    "startCursor": "0",
+    "endCursor": "",
+    "hasNextPage": false,
+    "hasPreviousPage": false,
+    "__typename": "PageInfo"
+   },
+   "totalCount": 27,
+   "edges": [
+    {
+     "cursor": "",
+     "node": {
+      "id": "street-fighter",
+      "type": "",
+      "countryId": "MX",
+      "name": "Street Fighter",
+      "originalName": "Street Fighter",
+      "distributor": "Paramount",
+      "rating": "B",
+      "ratingDescription": "Para adolescentes de 12 años en adelante.\nLa narrativa puede ser compleja. Presenta cierto grado de violencia, no extrema, por motivos específicos y no vinculada con lo sexual, poniendo en claro sus consecuencias. Los desnudos son breves y no detallados y las escenas sexuales sólo sugeridas. Se puede tratar el tema de las adicciones y las drogas pero sin exhibir su consumo. La violencia verbal no puede ser extrema.",
+      "position": "1",
+      "genre": [
+       "DRAMA",
+       "ACCIÓN"
+      ],
+      "synopsis": "Ambientada en 1993, los distanciados luchadores callejeros Ryu (Andrew Koji) y Ken Masters (Noah Centineo) se ven obligados a volver al combate cuando la mister",
+      "length": "119 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-15T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_720x1022_2.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_107x160_2.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StreetFighter/Es/sf_desktop_poster_80x80_2.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "la-caida-de-la-ballena",
+      "type": "",
+      "countryId": "MX",
+      "name": "La Caída De La Ballena",
+      "originalName": "Whalefall",
+      "distributor": "Disney",
+      "rating": "B",
+      "ratingDescription": "Para adolescentes de 12 años en adelante.\nLa narrativa puede ser compleja. Presenta cierto grado de violencia, no extrema, por motivos específicos y no vinculada con lo sexual, poniendo en claro sus consecuencias. Los desnudos son breves y no detallados y las escenas sexuales sólo sugeridas. Se puede tratar el tema de las adicciones y las drogas pero sin exhibir su consumo. La violencia verbal no puede ser extrema.",
+      "position": "2",
+      "genre": [
+       "SUSPENSO"
+      ],
+      "synopsis": "Tras la muerte de su padre (Josh Brolin), Jay Gardiner (Austin Abrams) se sumerge en la costa central de California en busca de sus restos, pero es tragado por ",
+      "length": "106 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-15T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaCaidaDeLaBallena/Es/19_Poster_720x1022px__5.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaCaidaDeLaBallena/Es/18_Poster_107x160px__5.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaCaidaDeLaBallena/Es/20_Poster_80x80px__2.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "el-laberinto-del-fauno",
+      "type": "",
+      "countryId": "MX",
+      "name": "El Laberinto Del Fauno",
+      "originalName": "Pan's Labyrinth",
+      "distributor": "Disney",
+      "rating": "B15",
+      "ratingDescription": "No recomendada para menores de 15 años.\nLa narrativa puede ser muy compleja y el contenido, al ser más explícito que el de la clasificación B, requiere cierto nivel de discernimiento y juicio. Puede contener mayor grado de horror y la violencia se puede vincular con conductas sexuales siempre que no se lleve al extremo. El erotismo y las escenas sexuales son implícitas y en un contexto no degradante o humillante. El consumo de drogas es mínimo y no se alienta. Puede contener expresiones y palabras procaces.",
+      "position": "3",
+      "genre": [
+       "DRAMA",
+       "FANTASÍA"
+      ],
+      "synopsis": "Con motivo de su 20.º aniversario, El laberinto del fauno, del visionario cineasta Guillermo del Toro, es una cinta de fantasía oscura ganadora del Premio de la",
+      "length": "118 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-09T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElLaberintoDelFauno/Es/[TOKEN:b28c04b7].jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElLaberintoDelFauno/Es/[TOKEN:ab4288a7].jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElLaberintoDelFauno/Es/[TOKEN:6950ca45].jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "el-corazon-de-la-bestia",
+      "type": "",
+      "countryId": "MX",
+      "name": "El Corazón De La Bestia",
+      "originalName": "Heart of the Beast",
+      "distributor": "Paramount",
+      "rating": "B",
+      "ratingDescription": "Para adolescentes de 12 años en adelante.\nLa narrativa puede ser compleja. Presenta cierto grado de violencia, no extrema, por motivos específicos y no vinculada con lo sexual, poniendo en claro sus consecuencias. Los desnudos son breves y no detallados y las escenas sexuales sólo sugeridas. Se puede tratar el tema de las adicciones y las drogas pero sin exhibir su consumo. La violencia verbal no puede ser extrema.",
+      "position": "4",
+      "genre": [
+       "DRAMA",
+       "ACCIÓN"
+      ],
+      "synopsis": "Tras un aterrador accidente aéreo, el oficial de Fuerzas Especiales James Belmont (Brad Pitt) y su perro de combate, Odin, quedan varados en lo profundo de la n",
+      "length": "101 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-09-24T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElCorazonDeLaBestia/Es/720x1022_24.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElCorazonDeLaBestia/Es/107x160_54.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElCorazonDeLaBestia/Es/HOBT_Desktop_Poster_80x80_2.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "la-isla-de-las-munecas",
+      "type": "",
+      "countryId": "MX",
+      "name": "La Isla De Las Muñecas",
+      "originalName": "La Isla De Las Muñecas",
+      "distributor": "Star Castle",
+      "rating": "B",
+      "ratingDescription": "Para adolescentes de 12 años en adelante.\nLa narrativa puede ser compleja. Presenta cierto grado de violencia, no extrema, por motivos específicos y no vinculada con lo sexual, poniendo en claro sus consecuencias. Los desnudos son breves y no detallados y las escenas sexuales sólo sugeridas. Se puede tratar el tema de las adicciones y las drogas pero sin exhibir su consumo. La violencia verbal no puede ser extrema.",
+      "position": "8",
+      "genre": [
+       "TERROR"
+      ],
+      "synopsis": "Cuenta la leyenda de este lugar, que cerca de las chinampas de Don Julián una joven se ahogo entre los lirios y ahi su cuerpo fue encontrado.",
+      "length": "80 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-15T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaIslaDeLasMunecas/Es/IDLM_Poster_720X1022_2.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaIslaDeLasMunecas/Es/IDLM_Poster_107X160_2.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaIslaDeLasMunecas/Es/IDLM_Poster_80X80_2.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "super-canino",
+      "type": "",
+      "countryId": "MX",
+      "name": "Súper Canino",
+      "originalName": "Charly The Wonder Dog",
+      "distributor": "Zima",
+      "rating": "A",
+      "ratingDescription": "Apta para todo el público",
+      "position": "9",
+      "genre": [
+       "ANIMACIÓN",
+       "AVENTURA",
+       "FAMILIAR"
+      ],
+      "synopsis": "Danny es un niño tímido cuya vida cambia cuando su querido perro, Charlie, es abducido por extraterrestres y regresa con superpoderes, convertido en el famoso S",
+      "length": "95 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-15T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/SuperCanino/Es/Poster_720x1022_2.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/SuperCanino/Es/Poster_107x160_2.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/SuperCanino/Es/Poster_80x80_2.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "resident-evil-noche-cero",
+      "type": "",
+      "countryId": "MX",
+      "name": "Resident Evil: Noche Cero",
+      "originalName": "Resident Evil",
+      "distributor": "Sony",
+      "rating": "B15",
+      "ratingDescription": "No recomendada para menores de 15 años.\nLa narrativa puede ser muy compleja y el contenido, al ser más explícito que el de la clasificación B, requiere cierto nivel de discernimiento y juicio. Puede contener mayor grado de horror y la violencia se puede vincular con conductas sexuales siempre que no se lleve al extremo. El erotismo y las escenas sexuales son implícitas y en un contexto no degradante o humillante. El consumo de drogas es mínimo y no se alienta. Puede contener expresiones y palabras procaces.",
+      "position": "12",
+      "genre": [
+       "TERROR",
+       "ACCIÓN"
+      ],
+      "synopsis": "De la mente del visionario cineasta Zach Cregger (Weapons, Barbarian) llega una emocionante —y aterradora— reinvención de la franquicia Resident Evil. En una hi",
+      "length": "94 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-09-16T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ResidentEvilNocheCero/Es/RE_720x1022_2.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ResidentEvilNocheCero/Es/RE_107x160_2.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ResidentEvilNocheCero/Es/80x80_54.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "cristiada",
+      "type": "",
+      "countryId": "MX",
+      "name": "Cristiada",
+      "originalName": "Cristiada",
+      "distributor": "+QueCine",
+      "rating": "B",
+      "ratingDescription": "Para adolescentes de 12 años en adelante.\nLa narrativa puede ser compleja. Presenta cierto grado de violencia, no extrema, por motivos específicos y no vinculada con lo sexual, poniendo en claro sus consecuencias. Los desnudos son breves y no detallados y las escenas sexuales sólo sugeridas. Se puede tratar el tema de las adicciones y las drogas pero sin exhibir su consumo. La violencia verbal no puede ser extrema.",
+      "position": "14",
+      "genre": [
+       "DRAMA"
+      ],
+      "synopsis": "En el marco de los 100 años de la Guerra Cristera, hoy presentamos por primera vez en español la película Cristiada. Esta obra es mucho más que una crónica hist",
+      "length": "140 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-15T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/Cristiada/Es/Poster_WEB_Desktop_720x1022px_2.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/Cristiada/Es/Poster_WEB_Desktop_107x160px.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/Cristiada/Es/Poster_WEB_Mobile_80x80px_2.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "now-playing"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "clayface",
+      "type": "",
+      "countryId": "MX",
+      "name": "Clayface",
+      "originalName": "Clayface",
+      "distributor": "Warner",
+      "rating": "C",
+      "ratingDescription": "Para adultos de 18 años en adelante.\nRestrictiva. La narración de los hechos o situaciones es detallada. Puede contener horror detallado, alto grado de violencia, escenas sexuales explícitas, adicciones y consumo de drogas así como violencia verbal extrema.",
+      "position": "21",
+      "genre": [
+       "TERROR",
+       "THRILLER"
+      ],
+      "synopsis": "De DC Studios, “Clayface” es un thriller de terror dirigido por James Watkins, protagonizado por Tom Rhys Harries en el papel principal del icónico villano favo",
+      "length": "108 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-22T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/Clayface/Es/P_720X1022_5.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/Clayface/Es/P_107X160_8.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/Clayface/Es/P_80X80_14.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "pre-sale",
+       "now-playing",
+       "coming-soon"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "la-venganza-del-charro-negro",
+      "type": "",
+      "countryId": "MX",
+      "name": "La Venganza Del Charro Negro",
+      "originalName": "La Venganza Del Charro Negro",
+      "distributor": "Videocine",
+      "rating": "A",
+      "ratingDescription": "Apta para todo el público",
+      "position": "27",
+      "genre": [
+       "ANIMACIÓN"
+      ],
+      "synopsis": "Después de varios años, el temible Charro Negro regresa con un nuevo propósito: vengarse de Leo San Juan y cobrar una deuda que ha quedado pendiente. Para logra",
+      "length": "94 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-22T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [
+       {
+        "name": "Preventa",
+        "resource": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Tags/Preventa/Es/Preventa.png",
+        "__typename": "TagsInfo"
+       }
+      ],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaVenganzaDelCharroNegro/Es/720x1022_copia_5.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaVenganzaDelCharroNegro/Es/107x160_60.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/LaVenganzaDelCharroNegro/Es/80x80_61.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "pre-sale",
+       "now-playing",
+       "coming-soon"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/2D/Es/2d_1__2.svg",
+        "name": "2D",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "el-bosque-salvaje-wildwood",
+      "type": "",
+      "countryId": "MX",
+      "name": "El Bosque Salvaje: Wildwood",
+      "originalName": "Wildwood",
+      "distributor": "Imagen Films",
+      "rating": "TBC",
+      "ratingDescription": " ",
+      "position": "33",
+      "genre": [
+       "ANIMACIÓN"
+      ],
+      "synopsis": "Después de que su pequeño hermano es secuestrado por una parvada de cuervos, la audaz adolescente, Prue, inicia una desesperada misión de rescate hacia el Bosqu",
+      "length": "132 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-10-29T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElBosqueSalvajeWildwood/Es/Wildwood_720x1022_2.jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElBosqueSalvajeWildwood/Es/Wildwood_107x160_2.jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/ElBosqueSalvajeWildwood/Es/Po_ster_80x80__5.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "pre-sale",
+       "now-playing",
+       "coming-soon"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    },
+    {
+     "cursor": "",
+     "node": {
+      "id": "stray-kids-world-tour-run-it-live-viewing",
+      "type": "",
+      "countryId": "MX",
+      "name": "Stray Kids World Tour <RUN IT> LIVE VIEWING",
+      "originalName": "Stray Kids World Tour <RUN IT> LIVE VIEWING",
+      "distributor": "+QueCine",
+      "rating": "TBC",
+      "ratingDescription": " ",
+      "position": "38",
+      "genre": [
+       "CONCIERTO"
+      ],
+      "synopsis": "Por primera vez, Stray Kids presenta una transmisión especial en vivo de «Stray Kids World Tour » desde el Tokyo Dome en cines de todo el mundo. Fiel al título ",
+      "length": "195 min",
+      "availableForSale": true,
+      "alerts": [],
+      "releaseDate": "2026-11-07T06:00",
+      "languages": [
+       "es",
+       "en"
+      ],
+      "formats": [
+       "2D"
+      ],
+      "tags": [
+       {
+        "name": "Preventa",
+        "resource": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Tags/Preventa/Es/Preventa.png",
+        "__typename": "TagsInfo"
+       }
+      ],
+      "media": [
+       {
+        "resource": "",
+        "type": "image",
+        "code": "poster",
+        "sizes": {
+         "large": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StrayKidsWorldTourRUNITLIVEVIEWING/Es/[TOKEN:56e7225c].jpg",
+         "medium": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StrayKidsWorldTourRUNITLIVEVIEWING/Es/[TOKEN:ec8c0fcd].jpg",
+         "small": "https://pimcore-content.cinepolis.com/assets/Mexico/Tickets/Movies/StrayKidsWorldTourRUNITLIVEVIEWING/Es/StrayKids_LiveViewing_80x80_1.jpg",
+         "__typename": "SizeInfo"
+        },
+        "__typename": "MediaInfo"
+       }
+      ],
+      "cities": [],
+      "cinemas": [],
+      "categories": [
+       "pre-sale",
+       "now-playing",
+       "coming-soon"
+      ],
+      "experiences": [
+       {
+        "icon": "https://pimcore-content.cinepolis.com/assets/Master_Data/Experiences/Tradicional/Es/TRADICIONAL_11.svg",
+        "name": "Tradicional",
+        "__typename": "ResourceStatic"
+       }
+      ],
+      "__typename": "Movie"
+     },
+     "__typename": "Edges"
+    }
+   ],
+   "__typename": "Movies"
+  }
+ }
+}
