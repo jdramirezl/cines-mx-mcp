@@ -12,7 +12,7 @@ import { HoldService, type Hold } from "../src/cinepolis/orders.js";
 import { CinepolisProvider } from "../src/cinepolis/provider.js";
 import type { HttpRequest, Transport } from "../src/http/transport.js";
 import { PaymentArm } from "../src/order/arm.js";
-import { CardDriver, cardTypeFor, chooseCard, fingerprintFallback, listSavedCards, type CardSession, type CardUi, type SavedCard, type VaultCard } from "../src/order/card.js";
+import { CardCheckDeferred, CardDriver, cardTypeFor, chooseCard, fingerprintFallback, listSavedCards, type CardSession, type CardUi, type SavedCard, type VaultCard } from "../src/order/card.js";
 import { DryRunDriver, MethodRouter, PurchaseLedger, purchase } from "../src/order/purchase.js";
 import { registerOrderTools } from "../src/orderTools.js";
 import { DEFAULT_PROFILE } from "../src/profile.js";
@@ -365,5 +365,37 @@ describe("card purchase over MCP", () => {
     expect(status).not.toContain(CVV);
     assertNoCvv(r, api, first, done, status);
     await c.close();
+  });
+});
+
+describe("card preflight", () => {
+  it("defers (does not fail) when payment_methods rejects an order session without a hold", async () => {
+    const t: Transport = async (r: HttpRequest) => {
+      const op = JSON.parse(r.body ?? "{}").operationName;
+      if (op === "payment_methods") return { status: 200, headers: {}, text: JSON.stringify({ data: { payment_methods: null }, errors: [{ message: "404: Tu compra no pudo ser completada. Por favor, vuelve a intentarlo en unos minutos." }] }) };
+      return { status: 200, headers: {}, text: JSON.stringify({ errors: [{ message: `unexpected ${op}` }] }) };
+    };
+    const client = new GraphQLClient({ transport: t, apiKey: new ApiKeyProvider(t, "K"), minIntervalMs: 0 });
+    const { ui, seen } = fakeUi();
+    await expect(listSavedCards({ client, accessToken: async () => "AT", buyer: async () => BUYER, ui }, "fresh")).rejects.toBeInstanceOf(CardCheckDeferred);
+    expect(seen.vaultUrl).toBe("");
+    const { runPreflight } = await import("../src/preflight.js");
+    const checks = await runPreflight("bad-id", 1, {
+      provider: new CinepolisProvider({ client }), client, profile: DEFAULT_PROFILE,
+      holds: new HoldService({ client, stateFile: join(tmp(), "h.json"), log: () => undefined }),
+      ledger: new PurchaseLedger(join(tmp(), "p.json")), arm: new PaymentArm(join(tmp(), "a.json")),
+      session: new SessionManager({ staticToken: "x", log: () => undefined }),
+      savedCards: () => listSavedCards({ client, accessToken: async () => "AT", buyer: async () => BUYER, ui }, "fresh"),
+      env: {}, chromePath: tmp(),
+    });
+    expect(checks.find((c) => c.name === "card")).toMatchObject({ ok: true, info: true, detail: expect.stringMatching(/se verifica al apartar/) });
+  });
+
+  it("the purchase path asks payment_methods for the hold's own order session", async () => {
+    const api = fakeApi();
+    const r = rig(api);
+    const h = heldOrder(r.holds);
+    await purchase({ holdId: h.holdId, expectedTotalMxn: 99, userApproved: true }, r.deps);
+    expect(api.calls.find((c) => c.op === "payment_methods")!.vars).toEqual({ orderSessionId: h.priv.orderSessionId, countryId: "MX" });
   });
 });

@@ -233,11 +233,12 @@ async function main(argv: string[]): Promise<number> {
       const client = new GraphQLClient();
       const browser = new BotBrowser();
       const session = new SessionManager({ browser, mailbox: buildMailbox(), log: () => undefined });
+      const holds = new HoldService({ client, stateFile: join(dir, "holds.json"), log: () => undefined });
       const checks = await runPreflight(showtimeId, Number(rest[1] ?? 1), {
         provider: new CinepolisProvider({ client }),
         client,
         profile: loadProfile(),
-        holds: new HoldService({ client, stateFile: join(dir, "holds.json"), log: () => undefined }),
+        holds,
         ledger: new PurchaseLedger(join(dir, "purchases.json")),
         arm: new PaymentArm(armFile()),
         session,
@@ -246,7 +247,7 @@ async function main(argv: string[]): Promise<number> {
           const { listSavedCards } = await import("./order/card.js");
           const { buyerFromEnv } = await import("./order/paypal.js");
           const { newOrderSessionId } = await import("./order/orderData.js");
-          return listSavedCards({ client, accessToken: () => session.getAccessToken({ allowLogin: false }), buyer: buyerFromEnv(), ui: browser }, newOrderSessionId());
+          return listSavedCards({ client, accessToken: () => session.getAccessToken({ allowLogin: false }), buyer: buyerFromEnv(), ui: browser }, holds.active()?.priv.orderSessionId ?? newOrderSessionId());
         },
         serverUrl: `http://127.0.0.1:${process.env.CINES_MCP_PORT ?? 8686}/mcp`,
       });

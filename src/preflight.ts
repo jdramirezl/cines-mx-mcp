@@ -135,8 +135,7 @@ export async function runPreflight(showtimeId: string, tickets: number, d: Prefl
     }),
   );
   if (d.savedCards) {
-    out.push(
-      await check("card", async () => {
+    const c = await check("card", async () => {
         const cards = await d.savedCards!();
         const usable = cards.filter((c) => !c.expired);
         must(usable.length, cards.length ? "todas tus tarjetas guardadas están vencidas" : "no hay tarjetas guardadas en tu cuenta de Cinépolis");
@@ -145,8 +144,9 @@ export async function runPreflight(showtimeId: string, tickets: number, d: Prefl
         const list = cards.map((c) => `*${c.lastFour}${c.isDefault ? " (predeterminada)" : ""}${c.expired ? " (vencida)" : ""}`).join(", ");
         const use = want ?? (usable.find((c) => c.isDefault) ?? usable[0])!.lastFour;
         return `tarjetas guardadas: ${list} · se usará *${use}${usable.length > 1 && !want ? " (fija otra con CINES_CARD_LAST4 o cardLast4)" : ""}`;
-      }),
-    );
+    });
+    // payment_methods needs an order session with an active hold: informational, not a failure.
+    out.push(c.ok || !/se verifica al apartar/.test(c.detail) ? c : { ...c, ok: true, info: true });
   }
   if (d.paypalLoggedIn) {
     // Not required: the PayPal window opens headed at the Mac during checkout and the user can log in there.

@@ -179,6 +179,13 @@ export function chooseCard(cards: SavedCard[], wanted?: string): SavedCard {
   return c;
 }
 
+/** The card list can only be read for an order session with an active hold. */
+export class CardCheckDeferred extends Error {
+  constructor() {
+    super("se verifica al apartar: Cinépolis solo da los métodos de pago para un apartado activo");
+  }
+}
+
 /**
  * Read-only: the saved cards the vault would offer (preflight). Uses a fresh,
  * unused order-session id for payment_methods; nothing is held or charged and
@@ -187,7 +194,14 @@ export function chooseCard(cards: SavedCard[], wanted?: string): SavedCard {
 export async function listSavedCards(d: { client: GraphQLClient; accessToken: () => Promise<string>; buyer: () => Promise<Buyer>; ui: CardUi }, orderSessionId: string): Promise<SavedCard[]> {
   const token = await d.accessToken();
   const buyer = await d.buyer();
-  const methods = await paymentMethods(d.client, orderSessionId, token);
+  let methods: PaymentMethodInfo[];
+  try {
+    methods = await paymentMethods(d.client, orderSessionId, token);
+  } catch (e) {
+    // Live 2026-10-20: payment_methods answers 404 for an order session with no active cart.
+    if (e instanceof CinesError && e.code === "CINES_BAD_REQUEST") throw new CardCheckDeferred();
+    throw e;
+  }
   const card = methods.find((m) => m.key === CARD_KEY && m.enabled);
   if (!card?.iframeUrl || !card.publicKey) throw new Error(methods.some((m) => m.key === CARD_3DS_KEY) ? "la cuenta usa tarjeta con 3-D Secure (no soportado aún)" : "Cinépolis no ofrece pago con tarjeta guardada");
   const userToken = await deunaUserToken(d.client, buyer, token);
