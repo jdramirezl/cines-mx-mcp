@@ -2,11 +2,17 @@
  * GraphQL client for api-g.cinepolis.com.
  */
 import { CinesError } from "../errors.js";
+import { makeHasher, scrubText } from "../safety/patterns.js";
 import { classify, errorFor } from "../http/classify.js";
 import { Pacer } from "../http/pacer.js";
 import { httpsTransport, type Transport } from "../http/transport.js";
 import { ApiKeyProvider } from "./apikey.js";
 import type { Operation } from "./queries.js";
+
+/** Strip tokens, e-mails and long ids from upstream error text before logging/returning it. */
+export function redactMessage(text: string): string {
+  return scrubText(text, { hash: makeHasher("errors") });
+}
 
 export const API_BASE = "https://api-g.cinepolis.com";
 
@@ -87,7 +93,11 @@ export class GraphQLClient {
       throw new CinesError("CINES_SCHEMA_CHANGED", `Invalid JSON from Cinépolis (${op.operationName})`);
     }
     if (json.errors?.length) {
-      const msg = json.errors.map((e) => e.message ?? "error").join("; ").slice(0, 300);
+      const msg = redactMessage(json.errors.map((e) => e.message ?? "error").join("; ")).slice(0, 300);
+      const vals = json.data && typeof json.data === "object" ? Object.values(json.data as Record<string, unknown>) : [];
+      const noData = !json.data || (vals.length > 0 && vals.every((v) => v === null));
+      const ext = json.errors.map((e) => JSON.stringify(e.extensions ?? {})).join(" ");
+      console.error(`[cinepolis] ${op.operationName} errors: ${msg} ${redactMessage(ext).slice(0, 300)}`);
       const codes = json.errors.map((e) => e.extensions?.code ?? "");
       if (codes.some((c) => /UNAUTH/i.test(c)) || /unauthori[sz]ed|jwt|token/i.test(msg)) {
         throw new CinesError("CINES_SESSION_EXPIRED", `Cinépolis session rejected (${op.operationName})`);
@@ -95,12 +105,13 @@ export class GraphQLClient {
       if (codes.includes("GRAPHQL_VALIDATION_FAILED") || /Cannot query field|Unknown argument|Unknown type/i.test(msg)) {
         throw new CinesError("CINES_SCHEMA_CHANGED", `Cinépolis API changed (${op.operationName}): ${msg}`);
       }
-      if (/not found|no existe|no est[aá] disponible/i.test(msg)) throw new CinesError("CINES_NOT_FOUND", `${op.operationName}: ${msg}`);
+      if (/not found|no existe|no est[aá] disponible/i.test(msg) && !/asiento|seat|boleto|ticket/i.test(msg)) throw new CinesError("CINES_NOT_FOUND", `${op.operationName}: ${msg}`);
       const classes = json.errors.map((e) => (e.extensions as { classification?: string } | undefined)?.classification ?? "");
-      if (classes.includes("INTERNAL_ERROR") || (!json.data && /unexpected error|try again/i.test(msg))) {
+      if (classes.includes("INTERNAL_ERROR") && !/asiento|seat|boleto|ticket|sesi[oó]n|funci[oó]n/i.test(msg)) {
         throw new CinesError("CINES_UNAVAILABLE", `Cinépolis failed to answer ${op.operationName}; try again later`, { retryable: true });
       }
-      if (!json.data) throw new CinesError("CINES_BAD_REQUEST", `${op.operationName}: ${msg}`);
+      // data missing or every field null = the operation failed; report Cinépolis's own text.
+      if (noData) throw new CinesError("CINES_BAD_REQUEST", `Cinépolis rechazó ${op.operationName}: ${msg}`);
     }
     if (json.data === undefined || json.data === null) {
       throw new CinesError("CINES_SCHEMA_CHANGED", `Empty data from Cinépolis (${op.operationName})`);

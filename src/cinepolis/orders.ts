@@ -156,8 +156,13 @@ export class HoldService {
     const userSessionId = await c.call<{ user_session_id: string }>(USER_SESSION_ID, { cinemaId: req.cinema.vistaId }, { accessToken: req.accessToken });
     const usid = userSessionId.user_session_id;
     if (!usid) throw new CinesError("CINES_SCHEMA_CHANGED", "Cinépolis no devolvió una sesión de compra.");
-    // General ticket types come from the public Tickets call (the member call with
-    // userSessionId returns only Club/account tickets, which we never use automatically).
+    // The site calls Tickets WITH userSessionId right before Order (Vista prepares
+    // the order session there). Do the same; its list only has Club/account
+    // tickets, which we never pick automatically, so it is used for nothing else.
+    await c
+      .call(TICKETS, { countryId: c.countryId, cinemaVistaId: req.cinema.vistaId, sessionId: req.showtime.sessionId, userSessionId: usid }, { accessToken: req.accessToken, noDedupe: true })
+      .catch((e: unknown) => this.log(`member tickets step failed: ${(e as Error).message}`));
+    // General ticket types (and the options sent in Order) come from the public call.
     const tData = parse(
       TicketsSchema,
       await c.call(TICKETS, { cinemaVistaId: req.cinema.vistaId, sessionId: req.showtime.sessionId, countryId: c.countryId }, { noDedupe: true }),

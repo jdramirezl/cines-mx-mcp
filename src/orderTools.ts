@@ -52,10 +52,12 @@ const jobs = new Map<string, Promise<unknown>>();
 
 export function registerOrderTools(server: McpServer, ctx: OrderToolContext): void {
   const waitMs = ctx.waitMs ?? 110_000;
+  /** Holds must answer well under the hub's MCP timeout (~60 s). */
+  const holdWaitMs = Math.min(waitMs, 40_000);
 
   /** Run work; if it pauses for secure input, park it and return needs_input. */
-  async function runInteractive(work: () => Promise<unknown>) {
-    const r = await runUntilInput(ctx.broker, work, { waitMs });
+  async function runInteractive(work: () => Promise<unknown>, wait = waitMs) {
+    const r = await runUntilInput(ctx.broker, work, { waitMs: wait });
     if (r.done) return ok(r.value);
     if (r.request) {
       jobs.set(r.request.requestId, r.job);
@@ -121,7 +123,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
             warnings: v.warnings.length ? v.warnings : undefined,
             next: "Muestra el resumen. Para pagar llama cines_purchase con holdId y expectedTotal = total; para cancelar, cines_release_hold.",
           };
-        });
+        }, holdWaitMs);
       } catch (e) {
         if (e instanceof CinesError && e.code === "CINES_SESSION_EXPIRED") ctx.session.invalidate();
         return fail(e);

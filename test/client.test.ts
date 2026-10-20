@@ -79,15 +79,30 @@ describe("api key discovery", () => {
       if (r.url.includes("165.")) return res(200, `a={API_KEY:"${FAKE_KEY}"}`);
       return res(200, "nothing here");
     };
-    const p = new ApiKeyProvider(t, undefined);
+    const p = new ApiKeyProvider(t, undefined, 60, undefined, async () => undefined);
     expect(await p.get()).toBe(FAKE_KEY);
     const n = seen.length;
     expect(await p.get()).toBe(FAKE_KEY);
     expect(seen.length).toBe(n);
     expect(await new ApiKeyProvider(t, "ENVKEY").get()).toBe("ENVKEY");
   });
+  it("skips empty API_KEY entries, retries a 403'd chunk once, and caches the key on disk", async () => {
+    let hits = 0;
+    const t: Transport = async (r) => {
+      if (r.url === SCHEDULES_MF) return res(200, entry);
+      if (r.url.includes("165.")) return ++hits === 1 ? res(403, CF_BLOCK_HTML) : res(200, `a={API_KEY:"",B:1},b={API_KEY:"${FAKE_KEY}"}`);
+      return res(200, "x");
+    };
+    const dir = (await import("node:fs")).mkdtempSync((await import("node:path")).join((await import("node:os")).tmpdir(), "key-"));
+    const file = `${dir}/apikey.cache`;
+    expect(await new ApiKeyProvider(t, undefined, 60, file, async () => undefined).get()).toBe(FAKE_KEY);
+    expect(hits).toBe(2);
+    const offline: Transport = async () => res(403, CF_BLOCK_HTML);
+    expect(await new ApiKeyProvider(offline, undefined, 60, file, async () => undefined).get()).toBe(FAKE_KEY);
+  });
+
   it("reports a blocked site as CINES_BLOCKED", async () => {
-    const p = new ApiKeyProvider(async () => res(403, CF_BLOCK_HTML), undefined);
+    const p = new ApiKeyProvider(async () => res(403, CF_BLOCK_HTML), undefined, 60, undefined, async () => undefined);
     await expect(p.get()).rejects.toMatchObject({ code: "CINES_BLOCKED" });
   });
 });
@@ -130,6 +145,17 @@ describe("GraphQLClient", () => {
       expect((err as CinesError).toJSON()).toEqual({ error: { code, message: expect.any(String), retryable } });
     }
   });
+  it("surfaces Cinépolis's own error when the mutation result is null (redacted)", async () => {
+    const body = JSON.stringify({ data: { order: null }, errors: [{ message: "El asiento G4 ya no está disponible para user@example.com", extensions: { code: "SEAT_TAKEN" } }] });
+    const { client } = fakeClient(() => res(200, body));
+    const err = (await client.call(CINEMAS, vars).catch((e: unknown) => e)) as CinesError;
+    expect(err.code).toBe("CINES_BAD_REQUEST");
+    expect(err.message).toMatch(/asiento G4 ya no está disponible/);
+    expect(err.message).not.toContain("user@example.com");
+    const data = JSON.stringify({ data: { order: { x: 1 } }, errors: [{ message: "warning only" }] });
+    await expect(fakeClient(() => res(200, data)).client.call(CINEMAS, vars)).resolves.toEqual({ order: { x: 1 } });
+  });
+
   it("re-discovers the API key once on 401 for public calls", async () => {
     let n = 0;
     const { client } = fakeClient(() => (++n === 1 ? res(401, "{}") : res(200, '{"data":{"ok":true}}')));

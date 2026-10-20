@@ -204,10 +204,12 @@ describe("HoldService", () => {
     const hs = new HoldService({ client: api.client, stateFile: join(dir, "holds.json"), log: () => undefined });
     const h = await hs.hold(req(["D5", "D6"]));
     expect(h).toMatchObject({ status: "held", seats: ["D5", "D6"], ticketType: "Admision General", unitMxn: 92, totalMxn: 198, chargesMxn: 14 });
-    expect(api.calls.map((c) => c.op)).toEqual(["UserSessionId", "Tickets", "Order"]);
+    expect(api.calls.map((c) => c.op)).toEqual(["UserSessionId", "Tickets", "Tickets", "Order"]);
     expect(api.calls[0]).toMatchObject({ path: "/v1/members/graphql", vars: { cinemaId: "570" }, auth: "AT" });
-    expect(api.calls[1]!.auth).toBeUndefined();
-    const order = api.calls[2]!.vars.orderData;
+    expect(api.calls[1]).toMatchObject({ auth: "AT", vars: { userSessionId: expect.stringMatching(/^usid/) } });
+    expect(api.calls[2]!.auth).toBeUndefined();
+    expect(api.calls[2]!.vars.userSessionId).toBeUndefined();
+    const order = api.calls[3]!.vars.orderData;
     expect(order.tickets.orderId).toBe(h.priv.orderId);
     expect(order.tickets.seats.map((s: any) => s.number)).toEqual(["D5", "D6"]);
     expect(statSync(join(dir, "holds.json")).mode & 0o777).toBe(0o600);
@@ -218,6 +220,23 @@ describe("HoldService", () => {
     expect(cancel).toMatchObject({ path: "/v1/carts/graphql", op: "CancelOrder", vars: { input: { country_id: "MX", order_session_id: h.priv.orderId } } });
     expect(hs.active()).toBeUndefined();
   });
+  it("VIP: uses that showtime's own area, ticket and cinema data (Miyana 673, live-observed shape)", async () => {
+    const api = fakeCinepolis();
+    const vipTickets = { tickets: [{ areaCategoryCode: "0000000001", tickets: [{ id: "2223", ticketTypeCode: "0001", description: "Admision General", ticketDescription: null, priceInCents: 19700, bookingFee: 700, taxInCents: 0, displaySequence: 0, quantityAvailablePerOrder: 10, type: "general", isPackageTicket: false }] }] };
+    const realCall = api.client.call.bind(api.client);
+    (api.client as any).call = (op: any, vars: any, o: any) => (op.operationName === "Tickets" && !vars.userSessionId ? Promise.resolve(vipTickets) : realCall(op, vars, o));
+    const vipCinema = { ...cinema, id: "cinepolis-vip-miyana-polanco-cdmx", vistaId: "673", name: "Miyana Polanco", type: "VIP", isVip: true, businessType: "VIP" };
+    const vipLayout = { ...layout(), areaName: "VIP" };
+    const hs = new HoldService({ client: api.client, stateFile: join(tmp(), "h.json"), log: () => undefined });
+    const h = await hs.hold({ cinema: vipCinema, showtime: { ...showtime, cinemaVistaId: "673", sessionId: "56651" }, movie: { name: "Clayface" }, layout: vipLayout, seats: [seat("D5")], defaultTicketType: "Admision General", accessToken: "AT" });
+    expect(h.ticketType).toBe("Admision General");
+    const od = api.calls.find((c) => c.op === "Order")!.vars.orderData;
+    expect(od.cinema).toMatchObject({ vistaId: "673", type: "VIP", businessType: "VIP" });
+    expect(od.tickets.schedule.sessionId).toBe("56651");
+    expect(od.tickets.seats[0]).toMatchObject({ description: "VIP", ticketsOptions: [expect.objectContaining({ id: "2223", ticketTypeCode: "0001", price: 19700, selected: true })] });
+    await hs.release();
+  });
+
   it("refuses holds above the cap before ordering, and releases if the real total exceeds it", async () => {
     const api = fakeCinepolis();
     const hs = new HoldService({ client: api.client, stateFile: join(tmp(), "h.json"), capMxn: 150, log: () => undefined });
