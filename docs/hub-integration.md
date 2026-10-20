@@ -89,7 +89,7 @@ interactive, one attempt, ≤ 60 min). Unarmed, a real call fails with
 `dryRun: true` always works. `cines_hold_status` reports `paymentArmed`.
 The PayPal step can take minutes (the user approves at the Mac): the call
 returns `{status:"in_progress", jobId}` after ~110 s; poll `cines_hold_status`
-until `purchases[0].status` is `paid` (with `bookingNumber`, `imageUrl`) or
+until the NEWEST purchase — the LAST element, `purchases.at(-1)` (the list is oldest first, up to 3) — has `status` `paid` (with `bookingNumber`, `imageUrl`) or
 `failed` / `unknown`.
 
 Hub flow:
