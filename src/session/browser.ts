@@ -103,10 +103,9 @@ export class BotBrowser implements SessionBrowser, PaymentUi {
     return this.with(async (ctx) => {
       const page = ctx.pages()[0] ?? (await ctx.newPage());
       await page.goto(SITE, { waitUntil: "domcontentloaded", timeout: 45_000 });
+      // The home page alone makes auth0-spa-js refresh the token (a guessed
+      // /mi-cuenta URL answered HTTP 500 live on 2026-10-20 and was dropped).
       await page.waitForTimeout(8000);
-      // Visiting a member page makes the SPA request a token if it has not yet.
-      await page.goto(`${SITE}/mi-cuenta`, { waitUntil: "domcontentloaded", timeout: 45_000 }).catch(() => undefined);
-      await page.waitForTimeout(6000);
       return BotBrowser.readAuth0(page);
     });
   }
