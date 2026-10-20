@@ -51,7 +51,7 @@ export class GraphQLClient {
     this.apiKey = opts.apiKey ?? new ApiKeyProvider(this.transport);
     this.pacer = new Pacer(opts.minIntervalMs ?? 350);
     this.countryId = opts.countryId ?? "MX";
-    this.language = opts.language ?? "es-MX";
+    this.language = opts.language ?? "ES"; // the site sends `language: ES` (recorded purchase)
     this.base = opts.base ?? API_BASE;
   }
 

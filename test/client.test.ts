@@ -127,6 +127,7 @@ describe("GraphQLClient", () => {
     expect(r.url).toBe("https://api-g.cinepolis.com/shared-services/locations/graphql");
     expect(r.headers?.["x-apikey"]).toBe("KEY");
     expect(r.headers?.["country-id"]).toBe("MX");
+    expect(r.headers?.language).toBe("ES");
     expect(JSON.parse(r.body!).operationName).toBe("Cinemas");
     expect(r.headers?.Authorization).toBeUndefined();
   });
