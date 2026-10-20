@@ -17,7 +17,7 @@ import { DryRunDriver, NotYetEnabledDriver, PurchaseLedger, purchase, capMxn } f
 import { DEFAULT_PROFILE } from "../src/profile.js";
 import { runUntilInput, SecureInputBroker } from "../src/secure.js";
 import { startServer } from "../src/server.js";
-import type { Services } from "../src/services.js";
+import { buildMailbox, type Services } from "../src/services.js";
 import { decodeQuotedPrintable, extractCode, isCodeEmail } from "../src/session/mailbox.js";
 import { jwtExpiry, parseAuth0Cache, SessionManager, type SessionBrowser } from "../src/session/session.js";
 
@@ -163,6 +163,13 @@ describe("session", () => {
 });
 
 describe("mailbox code extraction", () => {
+  it("buildMailbox follows CINES_IMAP_USER and the session reports it", () => {
+    expect(buildMailbox({})).toBeUndefined();
+    const mb = buildMailbox({ CINES_IMAP_USER: "bot@example.com" });
+    expect(mb).toBeDefined();
+    expect(new SessionManager({ mailbox: mb, log: () => undefined }).status().mailbox).toBe(true);
+    expect(new SessionManager({ mailbox: buildMailbox({}), log: () => undefined }).status().mailbox).toBe(false);
+  });
   it("finds the 6-digit code near 'código' and ignores other numbers", () => {
     expect(extractCode("Verifica tu cuenta", "Hola, tu código de verificación es: 482913. Vigencia 10 min. Folio 1234567")).toBe("482913");
     expect(extractCode("Tu código Cinépolis", "<td style='x'>&nbsp;915203&nbsp;</td>")).toBe("915203");

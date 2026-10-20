@@ -24,19 +24,23 @@ export function stateDir(home = homedir()): string {
   return join(home, "Library", "Application Support", "cines-mx", "state");
 }
 
+/** The bot-mailbox reader when CINES_IMAP_USER is set; shared by the server and the CLI. */
+export function buildMailbox(env: NodeJS.ProcessEnv = process.env): ImapCodeMailbox | undefined {
+  const user = env.CINES_IMAP_USER;
+  if (!user) return undefined;
+  return new ImapCodeMailbox({
+    user,
+    password: async () => env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", user)),
+    fromContains: env.CINES_CODE_SENDER ?? DEFAULT_CODE_SENDER,
+  });
+}
+
 export function buildServices(provider: CinepolisProvider, env = process.env, home = homedir()): Services {
   const dir = env.CINES_STATE_DIR ?? stateDir(home);
   const broker = new SecureInputBroker();
   const profileDir = defaultDirs(home).profileDir;
   const browser = existsSync(profileDir) || env.CINES_BROWSER === "1" ? new BotBrowser() : undefined;
-  const imapUser = env.CINES_IMAP_USER;
-  const mailbox = imapUser
-    ? new ImapCodeMailbox({
-        user: imapUser,
-        password: async () => env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", imapUser)),
-        fromContains: env.CINES_CODE_SENDER ?? DEFAULT_CODE_SENDER,
-      })
-    : undefined;
+  const mailbox = buildMailbox(env);
   const session = new SessionManager({ browser, mailbox, broker, loginEmail: env.CINES_LOGIN_EMAIL, staticToken: env.CINES_ACCESS_TOKEN });
   const holds = new HoldService({ client: provider.client, stateFile: join(dir, "holds.json"), capMxn: capMxn(env) });
   void holds.releaseOrphans().catch(() => undefined);

@@ -133,19 +133,24 @@ async function main(argv: string[]): Promise<number> {
     case "session": {
       const { BotBrowser } = await import("./session/browser.js");
       const { SessionManager } = await import("./session/session.js");
-      const s = new SessionManager({ browser: new BotBrowser(), log: (m) => console.log(m) });
+      const { buildMailbox } = await import("./services.js");
+      const s = new SessionManager({
+        browser: new BotBrowser(),
+        mailbox: buildMailbox(),
+        loginEmail: process.env.CINES_LOGIN_EMAIL,
+        log: (m) => console.log(m),
+      });
       const st = await s.keepAlive();
       console.log(JSON.stringify(st, null, 1));
       return st.state === "valid" || st.state === "expiring" ? 0 : 1;
     }
     case "mailbox-test": {
-      const { ImapCodeMailbox, keychainSecret } = await import("./session/mailbox.js");
-      const user = process.env.CINES_IMAP_USER;
-      if (!user) {
+      const { buildMailbox } = await import("./services.js");
+      const mb = buildMailbox();
+      if (!mb) {
         console.error("Falta CINES_IMAP_USER (en ~/.config/cines-mx/cines.env)");
         return 2;
       }
-      const mb = new ImapCodeMailbox({ user, password: async () => process.env.CINES_IMAP_PASSWORD ?? (await keychainSecret("cines-mx-imap", user)), fromContains: process.env.CINES_CODE_SENDER });
       const hours = Number(rest[0] ?? 48);
       const code = await mb.waitForCode(Date.now() - hours * 3_600_000, 1000);
       console.log(code ? `✅ IMAP OK: encontré un código de Cinépolis de las últimas ${hours} h (no se muestra).` : `IMAP OK, pero no hay códigos de Cinépolis en las últimas ${hours} h.`);
