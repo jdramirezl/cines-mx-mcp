@@ -112,10 +112,11 @@ describe("health", () => {
     console.log = (...a: unknown[]) => void lines.push(a.join(" "));
     console.error = (...a: unknown[]) => void lines.push(a.join(" "));
     try {
-      expect(await main(["--no-alert"], env, paths)).toBe(1);
+      const up = async () => "fake upstream ok";
+      expect(await main(["--no-alert"], env, paths, up)).toBe(1);
       expect(readFileSync(paths.stateFile, "utf8")).toMatch(/^fail:server/);
       lines.length = 0;
-      await main([], env, paths);
+      await main([], env, paths, up);
       expect(lines.join("\n")).toMatch(/unchanged since last run/);
     } finally {
       console.log = log;

@@ -114,10 +114,10 @@ export function defaultPaths(home = homedir()): Paths {
   };
 }
 
-export async function main(argv: string[], env = process.env, paths = defaultPaths()): Promise<number> {
+export async function main(argv: string[], env = process.env, paths = defaultPaths(), upstream?: () => Promise<string>): Promise<number> {
   const quiet = argv.includes("--quiet");
   const port = env.CINES_MCP_PORT ?? "8686";
-  const results = await runChecks({ mcpUrl: `http://127.0.0.1:${port}/mcp` });
+  const results = await runChecks({ mcpUrl: `http://127.0.0.1:${port}/mcp`, upstream });
   const state = summarize(results);
   const prev = existsSync(paths.stateFile) ? readFileSync(paths.stateFile, "utf8").trim() : "";
   mkdirSync(dirname(paths.stateFile), { recursive: true });
