@@ -87,16 +87,17 @@ describe("proposeSeats", () => {
     const xs = p.seats.map((s) => s.x);
     expect(xs.every((x, i) => i === 0 || x === xs[i - 1]! + 1)).toBe(true);
   });
-  it("never leaves a single stranded seat next to the block", () => {
-    // Row E: only E5..E8 free between taken seats -> a 3-block would strand one seat.
+  it("prefers blocks that strand no seat, but still proposes one when it must", () => {
+    // Row E: only E5..E8 free between taken seats.
     let l = room(10, 14);
     const allButE5to8 = l.rows.flatMap((r) => r.seats).filter((s) => !(s.row === "E" && +s.number >= 5 && +s.number <= 8)).map((s) => s.label);
     l = withTaken(l, allButE5to8);
-    const three = proposeSeats(l, 3, { mode: "regular" });
-    expect(three.seats).toEqual([]);
     const two = proposeSeats(l, 2, { mode: "regular" });
     expect(two.seats).toHaveLength(2);
     expect(strandedSeats(l.rows[4]!, new Set(two.seats.map((s) => s.label)))).toEqual([]);
+    const three = proposeSeats(l, 3, { mode: "regular" }); // every 3-block strands one seat
+    expect(three.seats).toHaveLength(3);
+    expect(three.contiguous).toBe(true);
   });
   it("skips wheelchair spaces unless asked", () => {
     const l = sala6();
@@ -132,10 +133,13 @@ describe("validateSeats", () => {
     expect(validateSeats(l, ["F9"]).errors.join()).toMatch(/ocupado/);
     expect(validateSeats(l, ["Z1"]).errors.join()).toMatch(/no existe/);
     expect(validateSeats(l, ["F7"], { tickets: 2 }).errors.join()).toMatch(/2 boleto/);
-    // F8 would sit alone between F7 (chosen) and F9 (taken).
-    expect(validateSeats(l, ["F6", "F7"]).errors.join()).toMatch(/F8 solo/);
-    // Row end: choosing F2 strands F1.
-    expect(validateSeats(l, ["F2", "F3"]).errors.join()).toMatch(/F1 solo/);
+    // A lone seat left next to the choice is only a warning (Cinépolis MX allows it).
+    const lone = validateSeats(l, ["F6", "F7"]);
+    expect(lone.ok).toBe(true);
+    expect(lone.warnings.join()).toMatch(/F8 suelto/);
+    const edge = validateSeats(l, ["F2", "F3"]);
+    expect(edge.ok).toBe(true);
+    expect(edge.warnings.join()).toMatch(/F1 suelto/);
     expect(validateSeats(l, ["A1"]).errors.join()).toMatch(/silla de ruedas/);
   });
   it("warns (or errors if the cinema requires it) when not together", () => {

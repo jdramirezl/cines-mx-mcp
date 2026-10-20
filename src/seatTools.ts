@@ -69,7 +69,7 @@ export function registerSeatTools(server: McpServer, ctx: SeatToolContext): void
     {
       title: "Seat map with proposed seats",
       description:
-        "Live seat map for a showtime with the best seats proposed for the party (regular rooms: center, middle-to-lower rows; VIP/IMAX/premium: center, upper rows; groups together; never leaves single empty seats). Returns `imageUrl` (PNG to send to the user), the proposal like ['F7','F8'] and availability counts. Does NOT hold seats. The user may reply with other seats; check them with cines_validate_seats.",
+        "Live seat map for a showtime with the best seats proposed for the party (regular rooms: center, middle-to-lower rows; VIP/IMAX/premium: center, upper rows; groups together; prefers not to leave single empty seats). Returns `imageUrl` (PNG to send to the user), the proposal like ['F7','F8'] and availability counts. Does NOT hold seats. The user may reply with other seats; check them with cines_validate_seats.",
       inputSchema: {
         showtimeId: z.string().describe("From cines_showtimes / cines_best_showtime, e.g. 570-102599"),
         tickets: z.number().int().min(1).max(10).optional().describe("Party size; default 1"),
@@ -116,7 +116,7 @@ export function registerSeatTools(server: McpServer, ctx: SeatToolContext): void
     {
       title: "Validate the user's seat choice",
       description:
-        "Check seats the user typed (e.g. 'F7,F8') against the live map: they exist, are free, match the ticket count, sit together, and do not strand a single empty seat (Cinépolis rule). Returns errors/warnings and a preview `imageUrl` with the choice highlighted. Does NOT hold seats.",
+        "Check seats the user typed (e.g. 'F7,F8') against the live map: they exist, are free, match the ticket count, sit together, and warns if a single empty seat would be left (allowed in Mexico). Returns errors/warnings and a preview `imageUrl` with the choice highlighted. Does NOT hold seats.",
       inputSchema: {
         showtimeId: z.string(),
         seats: z.string().describe("Seat labels, e.g. 'F7,F8'"),

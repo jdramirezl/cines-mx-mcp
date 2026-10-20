@@ -72,8 +72,9 @@ export function segments(row: SeatRow): Seat[][] {
 }
 
 /**
- * Cinépolis rule: do not leave a single empty seat between your seats and
- * another occupied seat or the end of the block. Returns the stranded seats.
+ * Seats that would be left as a lone empty seat next to the selection.
+ * Cinépolis MX does not forbid this (the "no single gaps" rule was from another
+ * country); used for warnings and as a soft preference in proposals.
  */
 export function strandedSeats(row: SeatRow, chosen: Set<string>): Seat[] {
   const out: Seat[] = [];
@@ -119,8 +120,9 @@ export function proposeSeats(layout: SeatLayout, n: number, opts: ProposeOptions
       for (let i = 0; i + n <= seg.length; i++) {
         const block = seg.slice(i, i + n);
         if (!block.every((s) => selectable(s, allowW))) continue;
-        if (strandedSeats(row, new Set(block.map((s) => s.label))).length) continue;
-        cands.push({ block, score: scoreBlock(layout, block, opts.mode) });
+        // Soft preference: avoid leaving a lone empty seat, but never exclude the block.
+        const stranded = strandedSeats(row, new Set(block.map((s) => s.label))).length;
+        cands.push({ block, score: scoreBlock(layout, block, opts.mode) + stranded * 0.35 });
       }
     }
   }
@@ -186,7 +188,8 @@ export function validateSeats(layout: SeatLayout, labels: string[], opts: { tick
   const chosen = new Set(seats.map((s) => s.label));
   for (const row of layout.rows) {
     if (!row.seats.some((s) => chosen.has(s.label))) continue;
-    for (const s of strandedSeats(row, chosen)) errors.push(`Dejarías ${s.label} solo; Cinépolis no permite asientos sueltos entre tu selección y otro ocupado.`);
+    // Cinépolis MX allows a lone empty seat (verified by the user); warn only. Cinépolis itself has the final word at hold time.
+    for (const s of strandedSeats(row, chosen)) warnings.push(`Dejarías ${s.label} suelto.`);
   }
   return { ok: errors.length === 0, seats: uniq, errors, warnings };
 }
