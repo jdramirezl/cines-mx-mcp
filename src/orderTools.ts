@@ -218,11 +218,12 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
     {
       title: "Pay for held seats (approval required)",
       description:
-        "Pay for a hold. Hard cap $1,000 MXN. `expectedTotal` must equal the hold's `total` shown to the user. Never pass card data or codes here. While fewer than 3 purchases have succeeded, `userApproved: true` is required (only after the user tapped ✅). Never retried. May return status 'needs_cvv', 'needs_3ds' or 'needs_email_code' with a challengeId — the hub collects the secret via secure input and calls cines_submit_code. `dryRun: true` simulates without paying.",
+        "Pay for a hold with the card saved in the user's Cinépolis account (default) or PayPal. Hard cap $1,000 MXN. `expectedTotal` must equal the hold's `total` shown to the user. Never pass card data or codes here. While fewer than 3 purchases have succeeded, `userApproved: true` is required (only after the user tapped ✅). Never retried. May return status 'needs_cvv', 'needs_3ds' or 'needs_email_code' with a challengeId — the hub collects the secret via secure input and calls cines_submit_code. `dryRun: true` simulates without paying.",
       inputSchema: {
         holdId: z.string(),
         expectedTotal: z.number().positive().describe("MXN; must equal the hold's `total` shown to the user"),
-        method: z.enum(["paypal", "card"]).optional().describe("Default paypal; card = card saved in the Cinépolis/DEUNA wallet"),
+        method: z.enum(["card", "paypal"]).optional().describe("Default card = card saved in the user's Cinépolis/DEUNA wallet (CVV via secure input); paypal needs the user at the server Mac"),
+        cardLast4: z.string().regex(/^\d{4}$/).optional().describe("Only if the user has several saved cards and named one (last four digits)"),
         userApproved: z.boolean().optional(),
         dryRun: z.boolean().optional(),
       },

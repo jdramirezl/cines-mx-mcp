@@ -6,7 +6,8 @@ import { HoldService } from "./cinepolis/orders.js";
 import type { CinepolisProvider } from "./cinepolis/provider.js";
 import { PaymentArm } from "./order/arm.js";
 import { PaypalDriver, buyerFromEnv } from "./order/paypal.js";
-import { DryRunDriver, NotYetEnabledDriver, PurchaseLedger, capMxn, type PaymentDriver } from "./order/purchase.js";
+import { CardDriver } from "./order/card.js";
+import { DryRunDriver, MethodRouter, NotYetEnabledDriver, PurchaseLedger, capMxn, type PaymentDriver } from "./order/purchase.js";
 import { SecureInputBroker } from "./secure.js";
 import { BotBrowser, defaultDirs } from "./session/browser.js";
 import { DEFAULT_CODE_SENDER, ImapCodeMailbox, keychainSecret } from "./session/mailbox.js";
@@ -65,13 +66,23 @@ export function buildServices(provider: CinepolisProvider, env = process.env, ho
     broker,
     ledger,
     driver: browser
-      ? new PaypalDriver({
-          client: provider.client,
-          holds,
-          accessToken: () => session.getAccessToken({ allowLogin: false }),
-          buyer: buyerFromEnv(env),
-          ui: browser,
-          waitMs: Number(env.CINES_PAYPAL_WAIT_MIN ?? 15) * 60_000,
+      ? new MethodRouter({
+          card: new CardDriver({
+            client: provider.client,
+            holds,
+            accessToken: () => session.getAccessToken({ allowLogin: false }),
+            buyer: buyerFromEnv(env),
+            ui: browser,
+            defaultLastFour: /^\d{4}$/.test(env.CINES_CARD_LAST4 ?? "") ? env.CINES_CARD_LAST4 : undefined,
+          }),
+          paypal: new PaypalDriver({
+            client: provider.client,
+            holds,
+            accessToken: () => session.getAccessToken({ allowLogin: false }),
+            buyer: buyerFromEnv(env),
+            ui: browser,
+            waitMs: Number(env.CINES_PAYPAL_WAIT_MIN ?? 15) * 60_000,
+          }),
         })
       : new NotYetEnabledDriver(),
     arm: new PaymentArm(armFile(env, home)),

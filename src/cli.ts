@@ -166,7 +166,7 @@ async function main(argv: string[]): Promise<number> {
       }
       const { createInterface } = await import("node:readline/promises");
       const rl = createInterface({ input: process.stdin, output: process.stdout });
-      const answer = await rl.question(`Esto habilita UN pago real (PayPal) durante ${minutes} min. Escribe ARMAR para confirmar: `);
+      const answer = await rl.question(`Esto habilita UN pago real (tarjeta guardada o PayPal) durante ${minutes} min. Escribe ARMAR para confirmar: `);
       rl.close();
       if (answer.trim() !== "ARMAR") {
         console.log("Cancelado; sigue desarmado.");
@@ -232,6 +232,7 @@ async function main(argv: string[]): Promise<number> {
       const dir = process.env.CINES_STATE_DIR ?? stateDir();
       const client = new GraphQLClient();
       const browser = new BotBrowser();
+      const session = new SessionManager({ browser, mailbox: buildMailbox(), log: () => undefined });
       const checks = await runPreflight(showtimeId, Number(rest[1] ?? 1), {
         provider: new CinepolisProvider({ client }),
         client,
@@ -239,8 +240,14 @@ async function main(argv: string[]): Promise<number> {
         holds: new HoldService({ client, stateFile: join(dir, "holds.json"), log: () => undefined }),
         ledger: new PurchaseLedger(join(dir, "purchases.json")),
         arm: new PaymentArm(armFile()),
-        session: new SessionManager({ browser, mailbox: buildMailbox(), log: () => undefined }),
+        session,
         paypalLoggedIn: () => browser.paypalLoggedIn(),
+        savedCards: async () => {
+          const { listSavedCards } = await import("./order/card.js");
+          const { buyerFromEnv } = await import("./order/paypal.js");
+          const { newOrderSessionId } = await import("./order/orderData.js");
+          return listSavedCards({ client, accessToken: () => session.getAccessToken({ allowLogin: false }), buyer: buyerFromEnv(), ui: browser }, newOrderSessionId());
+        },
         serverUrl: `http://127.0.0.1:${process.env.CINES_MCP_PORT ?? 8686}/mcp`,
       });
       for (const c of checks) console.log(`${c.info ? "info" : c.ok ? "ok  " : "FAIL"} ${c.name.padEnd(13)} ${c.detail}`);

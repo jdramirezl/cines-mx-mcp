@@ -1,0 +1,43 @@
+{
+ "variables": {
+  "input": {
+   "cinema_id": "570",
+   "customer": {
+    "email": "buyer@example.com",
+    "first_name": "Ana",
+    "last_name": "Prueba"
+   },
+   "payment": {
+    "payment_method": "bank_card_deuna",
+    "payment_id": "CARD_ID",
+    "payment_info": {
+     "payment_card_type": "master",
+     "payment_fingerprint": "FRAUD_ID",
+     "payment_fingerprint_fallback": "FALLBACK",
+     "payment_last_four_digits": "4242",
+     "payment_first_six_digits": "424242",
+     "payment_payer_id": "",
+     "payment_order_id": "",
+     "payment_retain_on_success": false,
+     "payment_card_category": "credit_card"
+    },
+    "payment_partial_active": false
+   },
+   "country_id": "MX",
+   "order_session_id": "ORDER_SESSION_ID"
+  }
+ },
+ "response": {
+  "data": {
+   "handlerComplete": {
+    "bookingInfo": {
+     "booking_id": "TESTBK1",
+     "booking_number": "100001",
+     "trans_number": "200002",
+     "__typename": "BookingInfo"
+    },
+    "__typename": "DispacherCompletePayment"
+   }
+  }
+ }
+}

@@ -56,7 +56,8 @@ or `{status:"needs_email_code", challengeId, …}` (see Secure input).
 | `holdId` | string | |
 | `expectedTotal` | number (MXN) | must equal the hold's `total` shown on the approval card (anti-drift) |
 | `userApproved` | bool | required `true` while `purchaseApprovalRequired` (first 3 purchases) |
-| `method` | `"paypal"` (default) \| `"card"` | `card` = card saved in the Cinépolis/DEUNA wallet |
+| `method` | `"card"` (default) \| `"paypal"` | `card` = card saved in the user's Cinépolis/DEUNA wallet, CVV via `needs_cvv`; `paypal` needs the user at the Mac |
+| `cardLast4` | string, optional | 4 digits; only if the user has several saved cards and named one (default: the account's default card) |
 | `dryRun` | bool, optional | simulate; nothing is charged |
 
 **No secrets as arguments**: there is deliberately no `cvv` parameter. When a
@@ -87,6 +88,10 @@ Real payment is **off unless armed** on the server Mac (`cinesctl arm-payment`,
 interactive, one attempt, ≤ 60 min). Unarmed, a real call fails with
 `CINES_PAYMENT_FAILED … no está armado` before anything is recorded;
 `dryRun: true` always works. `cines_hold_status` reports `paymentArmed`.
+Card flow: `cines_purchase` → `{status:"needs_cvv", challengeId, prompt}` (the
+prompt names the card, e.g. `*1234`, and the total) → secure input →
+`cines_submit_code` → `paid` (or an error). The CVV must never reach the model,
+chat history, logs or memory. `paid` for a card has no `imageUrl`.
 The PayPal step can take minutes (the user approves at the Mac): the call
 returns `{status:"in_progress", jobId}` after ~110 s; poll `cines_hold_status`
 until the NEWEST purchase — the LAST element, `purchases.at(-1)` (the list is oldest first, up to 3) — has `status` `paid` (with `bookingNumber`, `imageUrl`) or
@@ -119,7 +124,7 @@ Hub behaviour:
 | status | kind | when | format |
 |---|---|---|---|
 | `needs_email_code` | `email_code` | session expired and the bot mailbox did not deliver the code within ~150 s | 6 digits |
-| `needs_cvv` | `cvv` | `method:"card"` | 3–4 digits |
+| `needs_cvv` | `cvv` | `method:"card"` (the default) | 3–4 digits |
 | `needs_3ds` | `otp_3ds` | bank 3-D Secure / OTP | 4–10 alphanumerics |
 
 A call that takes longer than ~110 s returns `{status:"in_progress", jobId}`; poll `cines_hold_status`.

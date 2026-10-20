@@ -32,6 +32,8 @@ export interface PaymentResult {
 export interface PaymentContext {
   hold: Hold;
   method: PaymentMethod;
+  /** Saved card to use (last four digits), when the user named one. */
+  cardLast4?: string;
   /** Ask the user for a secret (CVV, 3DS/OTP); value goes straight to the driver. */
   ask: (kind: SecureKind, prompt: string, imageUrl?: string) => Promise<string>;
   log: (m: string) => void;
@@ -131,8 +133,26 @@ export interface PurchaseArgs {
   holdId: string;
   expectedTotalMxn: number;
   method?: PaymentMethod;
+  cardLast4?: string;
   userApproved?: boolean;
   dryRun?: boolean;
+}
+
+export const DEFAULT_METHOD: PaymentMethod = "card";
+
+/** Routes each method to its driver; `supports` is checked before the arm is consumed. */
+export class MethodRouter implements PaymentDriver {
+  readonly name = "router";
+  constructor(private readonly drivers: Partial<Record<PaymentMethod, PaymentDriver>>) {}
+  supports(method: PaymentMethod): boolean {
+    const d = this.drivers[method];
+    return Boolean(d) && (d!.supports ? d!.supports(method) : true);
+  }
+  pay(ctx: PaymentContext): Promise<PaymentResult> {
+    const d = this.drivers[ctx.method];
+    if (!d) throw new CinesError("CINES_BAD_REQUEST", `Método "${ctx.method}" no disponible.`);
+    return d.pay(ctx);
+  }
 }
 
 export interface PurchaseDeps {
@@ -157,6 +177,7 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
   const now = d.now ?? Date.now;
   const log = d.log ?? ((m: string) => console.error(`[purchase] ${m}`));
   const dryRun = args.dryRun === true;
+  if (args.cardLast4 !== undefined && !/^\d{4}$/.test(args.cardLast4)) throw new CinesError("CINES_BAD_REQUEST", "cardLast4 debe ser 4 dígitos.");
   const hold = d.holds.get(args.holdId);
   if (!hold) throw new CinesError("CINES_NOT_FOUND", "No conozco ese apartado de asientos.");
   if (hold.status === "purchased") throw new CinesError("CINES_BAD_REQUEST", "Esa compra ya se hizo.");
@@ -170,10 +191,10 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
   if (!dryRun && approvalRequired(d.ledger) && args.userApproved !== true) {
     throw new CinesError("CINES_BAD_REQUEST", `Las primeras ${APPROVAL_FREE_AFTER} compras requieren la aprobación explícita del usuario (userApproved: true tras el ✅).`);
   }
-  const method = args.method ?? "paypal";
+  const method = args.method ?? DEFAULT_METHOD;
   if (!dryRun) {
-    if (d.driver.name === "not-enabled") await d.driver.pay({ hold, method, ask: d.ask, log });
-    if (d.driver.supports && !d.driver.supports(method)) throw new CinesError("CINES_BAD_REQUEST", `El método "${method}" aún no está disponible; usa PayPal.`);
+    if (d.driver.name === "not-enabled") await d.driver.pay({ hold, method, cardLast4: args.cardLast4, ask: d.ask, log });
+    if (d.driver.supports && !d.driver.supports(method)) throw new CinesError("CINES_BAD_REQUEST", `El método "${method}" no está disponible en este servidor.`);
     if (d.ledger.inFlight()) throw new CinesError("CINES_BAD_REQUEST", "Ya hay un pago en curso.");
     const prior = d.ledger.find(hold.holdId);
     if (prior) throw new CinesError("CINES_PAYMENT_FAILED", `Ya se intentó pagar este apartado (${prior.status}); nunca reintento un pago. Revisa tu correo.`);
@@ -188,7 +209,7 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
   }
   const driver = dryRun ? (d.dryRunDriver ?? new DryRunDriver()) : d.driver;
   try {
-    const r = await driver.pay({ hold, method, ask: d.ask, log });
+    const r = await driver.pay({ hold, method, cardLast4: args.cardLast4, ask: d.ask, log });
     entry.status = "paid";
     entry.bookingNumber = r.bookingNumber;
     entry.screenshotPath = r.screenshotPath;

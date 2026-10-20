@@ -76,20 +76,8 @@ export class PaypalDriver implements PaymentDriver {
   }
 
   /** Booking for a Cinépolis order session, if the purchase completed. Never throws. */
-  async booking(orderSessionId: string): Promise<Booking | undefined> {
-    try {
-      const r = await this.d.client.call<{ orderDispatcher: null | { status?: string | null; booking_id?: string | null; transaction?: { booking_number?: string | null; trans_number?: string | null } | null } }>(
-        ORDER_DISPATCHER,
-        { orderSessionId, countryId: this.d.client.countryId },
-        { noDedupe: true },
-      );
-      const o = r.orderDispatcher;
-      if (!o) return undefined;
-      const bookingNumber = o.transaction?.booking_number || undefined;
-      return { bookingNumber: bookingNumber ?? (o.booking_id || undefined), transactionNumber: o.transaction?.trans_number || undefined, status: o.status ?? undefined };
-    } catch {
-      return undefined;
-    }
+  booking(orderSessionId: string): Promise<Booking | undefined> {
+    return fetchBooking(this.d.client, orderSessionId);
   }
 
   async pay(ctx: PaymentContext): Promise<PaymentResult> {
@@ -175,6 +163,23 @@ export class PaypalDriver implements PaymentDriver {
     const why =
       outcome.kind === "timeout" ? `No se completó el pago en ${Math.round(waitMs / 60_000)} min.` : outcome.kind === "closed" ? "Se cerró la ventana de pago." : "La página de pago no se reconoció.";
     return unpaid(why);
+  }
+}
+
+/** Booking for a Cinépolis order session via OrderDispatcher (public), if the purchase completed. Never throws. */
+export async function fetchBooking(client: GraphQLClient, orderSessionId: string): Promise<Booking | undefined> {
+  try {
+    const r = await client.call<{ orderDispatcher: null | { status?: string | null; booking_id?: string | null; transaction?: { booking_number?: string | null; trans_number?: string | null } | null } }>(
+      ORDER_DISPATCHER,
+      { orderSessionId, countryId: client.countryId },
+      { noDedupe: true },
+    );
+    const o = r.orderDispatcher;
+    if (!o) return undefined;
+    const bookingNumber = o.transaction?.booking_number || undefined;
+    return { bookingNumber: bookingNumber ?? (o.booking_id || undefined), transactionNumber: o.transaction?.trans_number || undefined, status: o.status ?? undefined };
+  } catch {
+    return undefined;
   }
 }
 

@@ -1,0 +1,140 @@
+{
+ "data": {
+  "payment_methods": [
+   {
+    "name": "Tarjeta de crédito o débito",
+    "order": "2",
+    "key": "bank_card_deuna",
+    "enabled": true,
+    "settings": {
+     "profile": [
+      {
+       "org_id": "9ozphlqx",
+       "merch": "cinepolis",
+       "provider": "cybersource",
+       "__typename": "Profile"
+      },
+      {
+       "org_id": null,
+       "merch": "cinepolis.com",
+       "provider": "riskified",
+       "__typename": "Profile"
+      }
+     ],
+     "iframe_url": "https://cinepolis.elements.deuna.com/vault",
+     "icon": {
+      "url": "",
+      "__typename": "Icon"
+     },
+     "public_key": "pk_fixture_public",
+     "merchant": "cinepolis",
+     "org_id": "9ozphlqx",
+     "env": "production",
+     "use_wallet": true,
+     "otp": false,
+     "otp_flow": "",
+     "points_to_use": null,
+     "available_points": null,
+     "total_redeemed": null,
+     "placeholder": "",
+     "__typename": "Settings"
+    },
+    "__typename": "PaymentMethodResponseModel"
+   },
+   {
+    "name": "Click to Pay",
+    "order": "3",
+    "key": "c2p_deuna",
+    "enabled": true,
+    "settings": {
+     "profile": [
+      {
+       "org_id": "9ozphlqx",
+       "merch": "cinepolis",
+       "provider": "cybersource",
+       "__typename": "Profile"
+      },
+      {
+       "org_id": null,
+       "merch": "cinepolis.com",
+       "provider": "riskified",
+       "__typename": "Profile"
+      }
+     ],
+     "iframe_url": "https://elements.deuna.com/click_to_pay",
+     "icon": {
+      "url": "",
+      "__typename": "Icon"
+     },
+     "public_key": "pk_fixture_public",
+     "merchant": "cinepolis",
+     "org_id": "9ozphlqx",
+     "env": "production",
+     "use_wallet": false,
+     "otp": false,
+     "otp_flow": "",
+     "points_to_use": null,
+     "available_points": null,
+     "total_redeemed": null,
+     "placeholder": "",
+     "__typename": "Settings"
+    },
+    "__typename": "PaymentMethodResponseModel"
+   },
+   {
+    "name": "Aplazo",
+    "order": "4",
+    "key": "aplazo",
+    "enabled": true,
+    "settings": {
+     "profile": [],
+     "iframe_url": "",
+     "icon": {
+      "url": "",
+      "__typename": "Icon"
+     },
+     "public_key": "pk_fixture_public",
+     "merchant": "",
+     "org_id": "",
+     "env": "production",
+     "use_wallet": false,
+     "otp": false,
+     "otp_flow": "",
+     "points_to_use": null,
+     "available_points": null,
+     "total_redeemed": null,
+     "placeholder": "",
+     "__typename": "Settings"
+    },
+    "__typename": "PaymentMethodResponseModel"
+   },
+   {
+    "name": "PayPal",
+    "order": "8",
+    "key": "paypal_deuna",
+    "enabled": true,
+    "settings": {
+     "profile": [],
+     "iframe_url": "",
+     "icon": {
+      "url": "",
+      "__typename": "Icon"
+     },
+     "public_key": "pk_fixture_public",
+     "merchant": "",
+     "org_id": "",
+     "env": "production",
+     "use_wallet": false,
+     "otp": false,
+     "otp_flow": "",
+     "points_to_use": null,
+     "available_points": null,
+     "total_redeemed": null,
+     "placeholder": "",
+     "__typename": "Settings"
+    },
+    "__typename": "PaymentMethodResponseModel"
+   }
+  ]
+ }
+}

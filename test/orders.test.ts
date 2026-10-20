@@ -484,7 +484,7 @@ describe("purchase arming", () => {
     const { h, base, arm, api, holds } = await held();
     arm.arm(30);
     const d = new PaypalDriver({ client: api.client, holds, accessToken: async () => "AT", buyer: async () => ({ email: "u@example.com", firstName: "A", lastName: "B" }), ui: { run: async () => ({}) as any } });
-    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 99, method: "card" }, { ...base, driver: d, arm })).rejects.toThrow(/aún no está disponible/);
+    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 99, method: "card" }, { ...base, driver: d, arm })).rejects.toThrow(/no está disponible/);
     expect(arm.status().armed).toBe(true);
   });
 });
@@ -579,6 +579,7 @@ describe("preflight", () => {
       arm: new PaymentArm(join(dir, "a.json")),
       session: new SessionManager({ staticToken: fakeJwt(Math.floor(Date.now() / 1000) + 86400), log: () => undefined }),
       paypalLoggedIn: async () => true,
+      savedCards: async () => [{ lastFour: "4242", isDefault: true }, { lastFour: "0005", expired: true }],
       env: { CINES_LOGIN_EMAIL: "u@example.com", CINES_BUYER_NAME: "A B", CINES_IMAP_USER: "b@example.com" },
       chromePath: tmp(),
     };
@@ -589,6 +590,7 @@ describe("preflight", () => {
     expect(by["booking-check"]?.ok).toBe(true);
     expect(by.session?.ok).toBe(true);
     expect(by.paypal?.ok).toBe(true);
+    expect(by.card).toMatchObject({ ok: true, detail: expect.stringMatching(/\*4242 \(predeterminada\), \*0005 \(vencida\) · se usará \*4242/) });
     const noPaypal = await runPreflight(future.id, 2, { ...deps, paypalLoggedIn: async () => false });
     expect(noPaypal.find((c) => c.name === "paypal")).toMatchObject({ ok: true, info: true, detail: expect.stringMatching(/iniciar sesión/) });
     expect(by.state?.ok).toBe(true);

@@ -32,6 +32,8 @@ export interface PreflightDeps {
   arm: PaymentArm;
   session: SessionManager;
   paypalLoggedIn?: () => Promise<boolean>;
+  /** Saved cards in the user's DEUNA wallet (read-only browser check). */
+  savedCards?: () => Promise<{ lastFour: string; isDefault?: boolean; expired?: boolean }[]>;
   serverUrl?: string;
   env?: NodeJS.ProcessEnv;
   chromePath?: string;
@@ -132,6 +134,20 @@ export async function runPreflight(showtimeId: string, tickets: number, d: Prefl
       return `sesión válida hasta ${s.expiresAt} · refresh ${s.hasRefreshToken ? "sí" : "no"} · nivel ${p.member!.levelName ?? "?"}`;
     }),
   );
+  if (d.savedCards) {
+    out.push(
+      await check("card", async () => {
+        const cards = await d.savedCards!();
+        const usable = cards.filter((c) => !c.expired);
+        must(usable.length, cards.length ? "todas tus tarjetas guardadas están vencidas" : "no hay tarjetas guardadas en tu cuenta de Cinépolis");
+        const want = env.CINES_CARD_LAST4;
+        if (want) must(usable.some((c) => c.lastFour === want), `CINES_CARD_LAST4=${want} no está entre tus tarjetas vigentes`);
+        const list = cards.map((c) => `*${c.lastFour}${c.isDefault ? " (predeterminada)" : ""}${c.expired ? " (vencida)" : ""}`).join(", ");
+        const use = want ?? (usable.find((c) => c.isDefault) ?? usable[0])!.lastFour;
+        return `tarjetas guardadas: ${list} · se usará *${use}${usable.length > 1 && !want ? " (fija otra con CINES_CARD_LAST4 o cardLast4)" : ""}`;
+      }),
+    );
+  }
   if (d.paypalLoggedIn) {
     // Not required: the PayPal window opens headed at the Mac during checkout and the user can log in there.
     const logged = await d.paypalLoggedIn!().catch(() => false);

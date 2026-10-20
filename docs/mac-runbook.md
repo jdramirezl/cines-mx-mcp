@@ -116,6 +116,27 @@ The arm is used up either way; arm again only for a new, deliberate attempt.
 
 Emergency: `bin/cinesctl release-hold` and `bin/cinesctl disarm-payment`.
 
+## Card purchase (saved card + CVV from Telegram; nobody at the Mac)
+
+Default method since v2. Uses the card already saved in your Cinépolis account
+(DEUNA wallet). You never type card data anywhere except the CVV, through
+Alfred's secure input.
+
+1. `bin/cinesctl preflight <showtimeId> 1` now also lists your saved cards
+   (`card  tarjetas guardadas: *1234 (predeterminada) · se usará *1234`).
+   It opens the bot's Chrome briefly; nothing is held or typed.
+   Several cards? Set `CINES_CARD_LAST4=1234` in `cines.env`, or tell Alfred which one.
+2. Arm as before (`bin/cinesctl arm-payment`, one attempt).
+3. In Telegram: hold → ✅ → Alfred asks for the **CVV** in secure mode → reply with the 3–4 digits.
+   On the Mac the bot's Chrome opens cinepolis.com with the DEUNA card window,
+   types the CVV there, and Cinépolis charges once. Alfred replies with the booking number.
+
+Outcomes: declined or any failure before the charge → seats released, nothing charged.
+No clear answer from Cinépolis → seats kept, never retried: check your e-mail and bank.
+3-D Secure cards are refused before any charge (not supported yet).
+
+Never start the server with `DEBUG=pw:*`: Playwright would log typed keys.
+
 ## Uninstall
 
 ```bash
