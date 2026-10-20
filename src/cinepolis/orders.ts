@@ -108,7 +108,13 @@ export class HoldService {
     writeFileSync(this.o.stateFile, JSON.stringify(this.holds.slice(-20), null, 1), { mode: 0o600 });
   }
 
+  /** Holds are shared with the CLI through the state file; re-read before deciding. */
+  private refresh(): void {
+    this.load();
+  }
+
   active(): Hold | undefined {
+    this.refresh();
     const h = this.holds.find((x) => x.status === "held" || x.status === "purchasing");
     if (h && h.status === "held" && Date.parse(h.expiresAt) <= this.now()) {
       h.status = "expired";
@@ -119,10 +125,14 @@ export class HoldService {
   }
 
   get(holdId: string): Hold | undefined {
+    this.refresh();
     return this.holds.find((h) => h.holdId === holdId);
   }
 
   update(h: Hold): void {
+    const i = this.holds.findIndex((x) => x.holdId === h.holdId);
+    if (i >= 0) this.holds[i] = h;
+    else this.holds.push(h);
     this.save();
     if (h.status !== "held") this.clearTimer();
   }
@@ -254,6 +264,26 @@ export class HoldService {
     this.update(h);
     this.log(`${why} ${h.holdId}`);
     return h;
+  }
+
+  /** Keep the Cinépolis order alive while the user is paying (local status is "purchasing"). */
+  async extendRemote(holdId: string): Promise<boolean> {
+    const h = this.get(holdId);
+    if (!h) return false;
+    const r = await this.o.client
+      .call<{ ExtendOrder: { extendOrderResult: { status: string } } }>(EXTEND_ORDER, { user_session_id: h.priv.orderId }, { noDedupe: true })
+      .catch(() => undefined);
+    return String(r?.ExtendOrder.extendOrderResult.status) === "true";
+  }
+
+  /** Release after a payment that provably did not complete (never called when the outcome is unknown). */
+  async releaseUnpaid(holdId: string): Promise<void> {
+    const h = this.get(holdId);
+    if (!h || h.status === "purchased" || h.status === "released") return;
+    await this.cancelRemote(h);
+    h.status = "released";
+    this.update(h);
+    this.log(`released after unpaid attempt ${h.holdId}`);
   }
 
   /** Ask Cinépolis for more time (the site does this when its countdown runs out). */

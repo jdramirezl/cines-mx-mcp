@@ -12,6 +12,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { CinesError } from "../errors.js";
+import type { PaymentPage, PaymentUi } from "../order/paypal.js";
 import type { SessionBrowser } from "./session.js";
 
 export const SITE = "https://cinepolis.com/mx";
@@ -33,7 +34,7 @@ export function defaultDirs(home = homedir()) {
 type Ctx = any;
 type Page = any;
 
-export class BotBrowser implements SessionBrowser {
+export class BotBrowser implements SessionBrowser, PaymentUi {
   private readonly profileDir: string;
   private readonly shotsDir: string;
   private readonly lockFile: string;
@@ -183,6 +184,36 @@ export class BotBrowser implements SessionBrowser {
       }
       return false;
     }, { headless: false });
+  }
+
+  /** Read-only: is PayPal still logged in inside the bot profile? */
+  async paypalLoggedIn(): Promise<boolean> {
+    return this.with(async (ctx) => {
+      const page = ctx.pages()[0] ?? (await ctx.newPage());
+      await page.goto("https://www.paypal.com/myaccount/summary", { waitUntil: "domcontentloaded", timeout: 45_000 });
+      await page.waitForTimeout(4000);
+      return !/\/(signin|authflow|login)/i.test(page.url());
+    });
+  }
+
+  /** PaymentUi: open the checkout in the headed bot window and keep it open while `fn` runs. */
+  async run<T>(url: string, fn: (page: PaymentPage) => Promise<T>): Promise<T> {
+    return this.with(async (ctx) => {
+      const page = ctx.pages()[0] ?? (await ctx.newPage());
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60_000 });
+      await page.bringToFront().catch(() => undefined);
+      const wrapper: PaymentPage = {
+        isClosed: () => page.isClosed(),
+        text: async () => {
+          const parts = [await page.innerText("body").catch(() => "")];
+          for (const f of page.frames()) parts.push(await f.innerText("body").catch(() => ""));
+          for (const pg of ctx.pages()) if (pg !== page) parts.push(String(pg.url()));
+          return parts.join("\n");
+        },
+        screenshot: async (name) => (page.isClosed() ? undefined : this.screenshot(page, name)),
+      };
+      return fn(wrapper);
+    });
   }
 
   /** One-time, headed: the user logs into PayPal in the bot profile; returns when they close the window. */

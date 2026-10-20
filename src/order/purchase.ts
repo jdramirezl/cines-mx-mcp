@@ -16,6 +16,7 @@ import { dirname } from "node:path";
 import type { Hold, HoldService } from "../cinepolis/orders.js";
 import { CinesError } from "../errors.js";
 import type { SecureKind } from "../secure.js";
+import type { PaymentArm } from "./arm.js";
 
 export const HARD_CAP_MXN = 1000;
 export const APPROVAL_FREE_AFTER = 3;
@@ -38,6 +39,12 @@ export interface PaymentContext {
 
 export interface PaymentDriver {
   readonly name: string;
+  /** Methods this driver can run (default: all). Checked BEFORE the arm is consumed. */
+  supports?(method: PaymentMethod): boolean;
+  /**
+   * Throw CINES_PAYMENT_FAILED only when certain nothing was charged (and the
+   * hold was released or is about to expire); any other error = outcome unknown.
+   */
   pay(ctx: PaymentContext): Promise<PaymentResult>;
 }
 
@@ -72,6 +79,8 @@ export interface LedgerEntry {
   method: PaymentMethod | "dry-run";
   status: "started" | "paid" | "failed" | "unknown";
   bookingNumber?: string;
+  screenshotPath?: string;
+  imageUrl?: string;
   error?: string;
   dryRun?: boolean;
 }
@@ -133,6 +142,8 @@ export interface PurchaseDeps {
   dryRunDriver?: PaymentDriver;
   ask: PaymentContext["ask"];
   cap?: number;
+  /** One-shot arm consumed by the first real attempt; missing = real payment disabled. */
+  arm?: PaymentArm;
   now?: () => number;
   log?: (m: string) => void;
 }
@@ -159,13 +170,17 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
   if (!dryRun && approvalRequired(d.ledger) && args.userApproved !== true) {
     throw new CinesError("CINES_BAD_REQUEST", `Las primeras ${APPROVAL_FREE_AFTER} compras requieren la aprobación explícita del usuario (userApproved: true tras el ✅).`);
   }
+  const method = args.method ?? "paypal";
   if (!dryRun) {
-    if (d.driver.name === "not-enabled") await d.driver.pay({ hold, method: args.method ?? "paypal", ask: d.ask, log });
+    if (d.driver.name === "not-enabled") await d.driver.pay({ hold, method, ask: d.ask, log });
+    if (d.driver.supports && !d.driver.supports(method)) throw new CinesError("CINES_BAD_REQUEST", `El método "${method}" aún no está disponible; usa PayPal.`);
     if (d.ledger.inFlight()) throw new CinesError("CINES_BAD_REQUEST", "Ya hay un pago en curso.");
     const prior = d.ledger.find(hold.holdId);
     if (prior) throw new CinesError("CINES_PAYMENT_FAILED", `Ya se intentó pagar este apartado (${prior.status}); nunca reintento un pago. Revisa tu correo.`);
+    if (!d.arm) throw new CinesError("CINES_PAYMENT_FAILED", "El pago real no está habilitado en este servidor.");
+    d.arm.consume(); // one attempt per arm, whatever happens next
+    log("payment arm consumed");
   }
-  const method = args.method ?? "paypal";
   const entry = d.ledger.add({ purchaseId: `pur_${randomBytes(6).toString("hex")}`, holdId: hold.holdId, at: new Date(now()).toISOString(), totalMxn: hold.totalMxn, method: dryRun ? "dry-run" : method, status: "started", dryRun });
   if (!dryRun) {
     hold.status = "purchasing";
@@ -176,6 +191,7 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
     const r = await driver.pay({ hold, method, ask: d.ask, log });
     entry.status = "paid";
     entry.bookingNumber = r.bookingNumber;
+    entry.screenshotPath = r.screenshotPath;
     d.ledger.update(entry);
     if (!dryRun) {
       hold.status = "purchased";
@@ -189,8 +205,11 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
     entry.error = err.message.slice(0, 200);
     d.ledger.update(entry);
     if (!dryRun) {
-      hold.status = "failed";
-      d.holds.update(hold);
+      const cur = d.holds.get(hold.holdId);
+      if (cur && cur.status === "purchasing") {
+        cur.status = "failed";
+        d.holds.update(cur);
+      }
     }
     throw new CinesError(err.code === "CINES_PAYMENT_FAILED" ? "CINES_PAYMENT_FAILED" : err.code, `${err.message} No se reintentará el pago.`, { retryable: false });
   }

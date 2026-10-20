@@ -156,9 +156,101 @@ async function main(argv: string[]): Promise<number> {
       console.log(code ? `✅ IMAP OK: encontré un código de Cinépolis de las últimas ${hours} h (no se muestra).` : `IMAP OK, pero no hay códigos de Cinépolis en las últimas ${hours} h.`);
       return 0;
     }
+    case "arm-payment": {
+      const { PaymentArm, ARM_DEFAULT_MIN, ARM_MAX_MIN } = await import("./order/arm.js");
+      const { armFile } = await import("./services.js");
+      const minutes = Math.min(Number(rest[0] ?? ARM_DEFAULT_MIN) || ARM_DEFAULT_MIN, ARM_MAX_MIN);
+      if (!process.stdin.isTTY) {
+        console.error("arm-payment requiere una terminal interactiva (no se puede armar desde scripts ni agentes).");
+        return 2;
+      }
+      const { createInterface } = await import("node:readline/promises");
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await rl.question(`Esto habilita UN pago real (PayPal) durante ${minutes} min. Escribe ARMAR para confirmar: `);
+      rl.close();
+      if (answer.trim() !== "ARMAR") {
+        console.log("Cancelado; sigue desarmado.");
+        return 1;
+      }
+      const st = new PaymentArm(armFile()).arm(minutes);
+      console.log(`✅ Pago ARMADO hasta ${st.expiresAt} para un solo intento. Desarmar: bin/cinesctl disarm-payment`);
+      return 0;
+    }
+    case "disarm-payment": {
+      const { PaymentArm } = await import("./order/arm.js");
+      const { armFile } = await import("./services.js");
+      new PaymentArm(armFile()).disarm();
+      console.log("Pago desarmado.");
+      return 0;
+    }
+    case "hold-status":
+    case "release-hold": {
+      const { join } = await import("node:path");
+      const { HoldService, publicHold } = await import("./cinepolis/orders.js");
+      const { PurchaseLedger } = await import("./order/purchase.js");
+      const { PaymentArm } = await import("./order/arm.js");
+      const { armFile, stateDir } = await import("./services.js");
+      const dir = process.env.CINES_STATE_DIR ?? stateDir();
+      const holds = new HoldService({ client: new GraphQLClient(), stateFile: join(dir, "holds.json"), log: () => undefined });
+      if (cmd === "release-hold") {
+        const h = await holds.release(rest[0]);
+        console.log(h ? `liberado: ${h.holdId} ${h.seats.join(", ")} (${h.status})` : "No había asientos apartados.");
+        return 0;
+      }
+      const ledger = new PurchaseLedger(join(dir, "purchases.json"));
+      const h = holds.active();
+      console.log(
+        JSON.stringify(
+          {
+            hold: h ? { ...publicHold(h), secondsLeft: Math.max(0, Math.round((Date.parse(h.expiresAt) - Date.now()) / 1000)) } : null,
+            paymentArmed: new PaymentArm(armFile()).status(),
+            successfulPurchases: ledger.successes(),
+            inFlight: ledger.inFlight() ?? null,
+            recent: ledger.recent(3).map((e) => ({ purchaseId: e.purchaseId, at: e.at, total: e.totalMxn, status: e.status, bookingNumber: e.bookingNumber, screenshotPath: e.screenshotPath, error: e.error, dryRun: e.dryRun })),
+          },
+          null,
+          1,
+        ),
+      );
+      return h ? 1 : 0;
+    }
+    case "preflight": {
+      const showtimeId = rest[0];
+      if (!showtimeId) {
+        console.error("usage: cines preflight <showtimeId> [tickets]");
+        return 2;
+      }
+      const { join } = await import("node:path");
+      const { HoldService } = await import("./cinepolis/orders.js");
+      const { PurchaseLedger } = await import("./order/purchase.js");
+      const { PaymentArm } = await import("./order/arm.js");
+      const { armFile, buildMailbox, stateDir } = await import("./services.js");
+      const { BotBrowser } = await import("./session/browser.js");
+      const { SessionManager } = await import("./session/session.js");
+      const { loadProfile } = await import("./profile.js");
+      const { runPreflight } = await import("./preflight.js");
+      const dir = process.env.CINES_STATE_DIR ?? stateDir();
+      const client = new GraphQLClient();
+      const browser = new BotBrowser();
+      const checks = await runPreflight(showtimeId, Number(rest[1] ?? 1), {
+        provider: new CinepolisProvider({ client }),
+        client,
+        profile: loadProfile(),
+        holds: new HoldService({ client, stateFile: join(dir, "holds.json"), log: () => undefined }),
+        ledger: new PurchaseLedger(join(dir, "purchases.json")),
+        arm: new PaymentArm(armFile()),
+        session: new SessionManager({ browser, mailbox: buildMailbox(), log: () => undefined }),
+        paypalLoggedIn: () => browser.paypalLoggedIn(),
+        serverUrl: `http://127.0.0.1:${process.env.CINES_MCP_PORT ?? 8686}/mcp`,
+      });
+      for (const c of checks) console.log(`${c.info ? "info" : c.ok ? "ok  " : "FAIL"} ${c.name.padEnd(13)} ${c.detail}`);
+      const failed = checks.filter((c) => !c.ok && !c.info);
+      console.log(failed.length ? `\n❌ ${failed.length} verificación(es) fallaron; no armes el pago.` : "\n✅ Todo listo. Siguiente: bin/cinesctl arm-payment");
+      return failed.length ? 1 : 0;
+    }
     default:
       console.error(
-        "usage: cines probe [cinemaId] | listings [cinemaId] [today|tomorrow|YYYY-MM-DD] | login | paypal-login | session | mailbox-test [hours]",
+        "usage: cines probe | listings [cinemaId] [date] | login | paypal-login | session | mailbox-test [hours] | preflight <showtimeId> [tickets] | arm-payment [min] | disarm-payment | hold-status | release-hold [holdId]",
       );
       return 2;
   }

@@ -12,6 +12,11 @@
 #   cinesctl paypal-login          one-time: log into PayPal in the bot's Chrome profile
 #   cinesctl session               refresh + show the Cinépolis session state
 #   cinesctl mailbox-test [hours]  check the bot mailbox (IMAP) and code detection
+#   cinesctl preflight <showtimeId> [tickets]  read-only checks before the first real purchase
+#   cinesctl arm-payment [min]     interactive: allow ONE real payment for 30 min (max 60)
+#   cinesctl disarm-payment        cancel the arm
+#   cinesctl hold-status           active hold, arm state, recent purchases
+#   cinesctl release-hold [holdId] release held seats now
 #
 # Env: NODE_BIN (Node >= 22.13), CINES_MCP_PORT (default 8686), CINES_HOME (tests).
 set -euo pipefail
@@ -152,6 +157,7 @@ case "${1:-}" in
   paypal-login) cmd_cli paypal-login ;;
   session) cmd_cli session ;;
   mailbox-test) shift; cmd_cli mailbox-test "$@" ;;
+  preflight|arm-payment|disarm-payment|hold-status|release-hold) c="$1"; shift; cmd_cli "$c" "$@" ;;
   render) n="$(pick_node)"; render "$REPO/launchd/com.jdrami.cines-mcp.plist.in" "$LABEL_MCP" "$n"; render "$REPO/launchd/com.jdrami.cines-health.plist.in" "$LABEL_HEALTH" "$n" ;;
-  *) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
+  *) sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

@@ -13,7 +13,10 @@ import { mapSeatLayout } from "../src/cinepolis/seats.js";
 import type { Cinema, Showtime } from "../src/domain.js";
 import type { HttpRequest, Transport } from "../src/http/transport.js";
 import { buildOrderData, chooseTicket, newOrderSessionId } from "../src/order/orderData.js";
+import { PaymentArm } from "../src/order/arm.js";
+import { PaypalDriver, type PaymentPage, type PaymentUi } from "../src/order/paypal.js";
 import { DryRunDriver, NotYetEnabledDriver, PurchaseLedger, purchase, capMxn } from "../src/order/purchase.js";
+import { runPreflight } from "../src/preflight.js";
 import { DEFAULT_PROFILE } from "../src/profile.js";
 import { runUntilInput, SecureInputBroker } from "../src/secure.js";
 import { startServer } from "../src/server.js";
@@ -36,14 +39,14 @@ const seat = (l: string) => layout().rows.flatMap((r) => r.seats).find((s) => s.
 /** Fake Cinépolis API: fixtures for reads + an in-memory order system. */
 function fakeCinepolis() {
   const calls: { path: string; op: string; vars: any; auth?: string }[] = [];
-  const state = { held: new Set<string>(), cancelled: [] as string[], usidN: 0, orderTotal: 19800 };
+  const state = { held: new Set<string>(), cancelled: [] as string[], extended: 0, usidN: 0, orderTotal: 19800, checkouts: 0, dispatcher: (() => null) as () => unknown };
   const t: Transport = async (r: HttpRequest) => {
     const body = JSON.parse(r.body ?? "{}");
     const op = body.operationName as string;
     const v = body.variables ?? {};
     const path = new URL(r.url).pathname;
     calls.push({ path, op, vars: v, auth: r.headers?.Authorization });
-    const member = ["UserSessionId", "Order"].includes(op);
+    const member = ["UserSessionId", "Order", "paypalWalletCheckout", "Profile"].includes(op);
     if (member && !r.headers?.Authorization) return { status: 401, headers: {}, text: "{}" };
     let data: unknown;
     switch (op) {
@@ -67,7 +70,10 @@ function fakeCinepolis() {
         data = { CancelOrder: { cancelOrderResult: { extended_result_code: 0, order_not_found: !found, result: 0, error_description: null } } };
         break;
       }
-      case "ExtendOrder": data = { ExtendOrder: { extendOrderResult: { status: state.held.has(v.user_session_id) ? "true" : "false" } } }; break;
+      case "ExtendOrder": state.extended++; data = { ExtendOrder: { extendOrderResult: { status: state.held.has(v.user_session_id) ? "true" : "false" } } }; break;
+      case "paypalWalletCheckout": state.checkouts++; data = { paypalWalletCheckout: { orderToken: { order_token: `tok_${v.order_session_id.slice(0, 8)}` } } }; break;
+      case "OrderDispatcher": data = { orderDispatcher: state.dispatcher() }; break;
+      case "Profile": data = { member: { levelName: "Fan" } }; break;
       default: return { status: 200, headers: {}, text: JSON.stringify({ errors: [{ message: `unknown op ${op}` }] }) };
     }
     return { status: 200, headers: {}, text: JSON.stringify({ data }) };
@@ -257,8 +263,10 @@ describe("purchase guardrails", () => {
     for (let i = 0; i < (opts.successes ?? 0); i++) ledger.add({ holdId: `old${i}`, at: "x", totalMxn: 1, method: "paypal", status: "paid" });
     const h = await holds.hold({ cinema, showtime, movie: { name: "SF" }, layout: layout(), seats: [seat("D5"), seat("D6")], defaultTicketType: "Admision General", accessToken: "AT" });
     const broker = new SecureInputBroker();
-    const deps = (driver = new DryRunDriver()) => ({ holds, ledger, driver, dryRunDriver: new DryRunDriver(), ask: (k: any, p: string) => broker.ask(k, p), log: () => undefined });
-    return { h, holds, ledger, broker, deps, api };
+    const arm = new PaymentArm(join(dir, "arm.json"));
+    arm.arm(30);
+    const deps = (driver = new DryRunDriver()) => ({ holds, ledger, driver, dryRunDriver: new DryRunDriver(), arm, ask: (k: any, p: string) => broker.ask(k, p), log: () => undefined });
+    return { h, holds, ledger, broker, deps, api, arm };
   }
   it("dry-run pays nothing and leaves the hold usable", async () => {
     const { h, deps, holds } = await setup();
@@ -276,7 +284,7 @@ describe("purchase guardrails", () => {
     await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 184 }, deps())).rejects.toThrow(/no coincide/);
     const failing = new DryRunDriver({ fail: "Banco rechazó" });
     await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 198 }, deps(failing as any))).rejects.toMatchObject({ code: "CINES_PAYMENT_FAILED", message: expect.stringMatching(/No se reintentará/) });
-    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 198 }, deps())).rejects.toThrow(/ya no están apartados|nunca reintento/);
+    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 198 }, deps())).rejects.toThrow(/ya no están apartados|nunca reintento|no está armado/);
   });
   it("enforces the hard cap regardless of configuration", async () => {
     const { h, deps } = await setup({ successes: 5 });
@@ -372,4 +380,165 @@ describe("MCP order tools", () => {
     const rel = await call("cines_release_hold");
     expect(rel.value.status).toBe("released");
   }, 20_000);
+});
+
+describe("payment arm", () => {
+  it("arms for one attempt, expires, and refuses when not armed", () => {
+    let now = NOW;
+    const a = new PaymentArm(join(tmp(), "arm.json"), () => now);
+    expect(a.status().armed).toBe(false);
+    expect(() => a.consume()).toThrow(/no está armado/);
+    expect(a.arm(500).minutesLeft).toBe(60); // capped
+    a.consume();
+    expect(() => a.consume()).toThrow(/no está armado/);
+    a.arm(30);
+    now += 31 * 60_000;
+    expect(a.status().armed).toBe(false);
+    a.arm(30);
+    a.disarm();
+    expect(a.status().armed).toBe(false);
+  });
+});
+
+describe("purchase arming", () => {
+  async function held() {
+    const api = fakeCinepolis();
+    const dir = tmp();
+    const holds = new HoldService({ client: api.client, stateFile: join(dir, "h.json"), log: () => undefined });
+    const ledger = new PurchaseLedger(join(dir, "p.json"));
+    for (let i = 0; i < 5; i++) ledger.add({ holdId: `o${i}`, at: "x", totalMxn: 1, method: "paypal", status: "paid" });
+    const h = await holds.hold({ cinema, showtime, movie: { name: "SF" }, layout: layout(), seats: [seat("D5")], defaultTicketType: "Admision General", accessToken: "AT" });
+    const arm = new PaymentArm(join(dir, "arm.json"));
+    return { api, holds, ledger, h, arm, base: { holds, ledger, ask: async () => "", log: () => undefined } };
+  }
+  it("refuses real payment when not armed, before recording anything", async () => {
+    const { h, ledger, base } = await held();
+    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 99 }, { ...base, driver: new DryRunDriver(), arm: new PaymentArm(join(tmp(), "a.json")) })).rejects.toThrow(/no está armado/);
+    expect(ledger.find(h.holdId)).toBeUndefined();
+  });
+  it("dryRun never consumes the arm; a real attempt consumes it even when it fails", async () => {
+    const { h, base, arm } = await held();
+    arm.arm(30);
+    await purchase({ holdId: h.holdId, expectedTotalMxn: 99, dryRun: true }, { ...base, driver: new DryRunDriver(), arm });
+    expect(arm.status().armed).toBe(true);
+    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 99 }, { ...base, driver: new DryRunDriver({ fail: "x" }), arm })).rejects.toThrow();
+    expect(arm.status().armed).toBe(false);
+  });
+  it("an unsupported method is refused before the arm is consumed", async () => {
+    const { h, base, arm, api, holds } = await held();
+    arm.arm(30);
+    const d = new PaypalDriver({ client: api.client, holds, accessToken: async () => "AT", buyer: async () => ({ email: "u@example.com", firstName: "A", lastName: "B" }), ui: { run: async () => ({}) as any } });
+    await expect(purchase({ holdId: h.holdId, expectedTotalMxn: 99, method: "card" }, { ...base, driver: d, arm })).rejects.toThrow(/aún no está disponible/);
+    expect(arm.status().armed).toBe(true);
+  });
+});
+
+describe("PaypalDriver", () => {
+  function rig(opts: { dispatcherAfter?: number; dispatcher?: () => unknown; close?: number; text?: string; checkoutFails?: boolean } = {}) {
+    const api = fakeCinepolis();
+    const holds = new HoldService({ client: api.client, stateFile: join(tmp(), "h.json"), log: () => undefined });
+    let t = NOW;
+    let polls = 0;
+    api.state.dispatcher = opts.dispatcher ?? (() => (++polls >= (opts.dispatcherAfter ?? Infinity) ? { status: "COMPLETED", booking_id: "B1", transaction: { booking_number: "BK123", trans_number: "TR9" } } : null));
+    const shots: string[] = [];
+    const ui: PaymentUi = {
+      run: async (url, fn) => {
+        expect(url).toMatch(/^https:\/\/pay\.deuna\.io\/now\/tok_/);
+        let ticks = 0;
+        const page: PaymentPage = { isClosed: () => opts.close !== undefined && ++ticks > opts.close, text: async () => opts.text ?? "Redirigiendo a PayPal", screenshot: async (n) => (shots.push(n), `/private/${n}.png`) };
+        return fn(page);
+      },
+    };
+    const driver = new PaypalDriver({
+      client: api.client,
+      holds,
+      accessToken: async () => {
+        if (opts.checkoutFails) throw new Error("no session");
+        return "AT";
+      },
+      buyer: async () => ({ email: "u@example.com", firstName: "A", lastName: "B" }),
+      ui,
+      waitMs: 15 * 60_000,
+      pollMs: 5000,
+      extendEveryMs: 4 * 60_000,
+      now: () => t,
+      sleep: async (ms) => void (t += ms),
+    });
+    return { api, holds, driver, shots };
+  }
+  const ctx = async (holds: HoldService) => {
+    const h = await holds.hold({ cinema, showtime, movie: { name: "SF" }, layout: layout(), seats: [seat("D5")], defaultTicketType: "Admision General", accessToken: "AT" });
+    h.status = "purchasing";
+    holds.update(h);
+    return { hold: h, method: "paypal" as const, ask: async () => "", log: () => undefined };
+  };
+
+  it("waits for the user, keeps the order alive, and captures the booking + screenshot", async () => {
+    const { driver, holds, api, shots } = rig({ dispatcherAfter: 100 }); // ~8 min of polling
+    const r = await driver.pay(await ctx(holds));
+    expect(r).toEqual({ bookingNumber: "BK123", transactionNumber: "TR9", screenshotPath: "/private/confirmation.png" });
+    expect(api.state.extended).toBeGreaterThanOrEqual(1);
+    expect(api.state.cancelled).toHaveLength(0);
+    expect(shots).toEqual(["confirmation"]);
+    const co = api.calls.find((c) => c.op === "paypalWalletCheckout")!;
+    expect(co).toMatchObject({ path: "/v1/purchase/graphql", auth: "AT", vars: { country_id: "MX", format: "2D", isPartial: false, email: "u@example.com" } });
+  });
+  it("times out after waiting, releases the hold and does not retry", async () => {
+    const { driver, holds, api } = rig();
+    const c = await ctx(holds);
+    await expect(driver.pay(c)).rejects.toMatchObject({ code: "CINES_PAYMENT_FAILED", message: expect.stringMatching(/15 min.*No se cobró nada/) });
+    expect(api.state.cancelled).toEqual([c.hold.priv.orderId]);
+    expect(api.state.checkouts).toBe(1);
+    expect(holds.get(c.hold.holdId)?.status).toBe("released");
+  });
+  it("closing the window releases; an in-between state does NOT release", async () => {
+    const a = rig({ close: 2 });
+    await expect(a.driver.pay(await ctx(a.holds))).rejects.toThrow(/Se cerró la ventana/);
+    expect(a.api.state.cancelled).toHaveLength(1);
+    const b = rig({ dispatcher: () => ({ status: "PENDING", booking_id: null, transaction: null }), close: 1 });
+    await expect(b.driver.pay(await ctx(b.holds))).rejects.toMatchObject({ code: "CINES_UNAVAILABLE", message: expect.stringMatching(/PENDING/) });
+    expect(b.api.state.cancelled).toHaveLength(0);
+  });
+  it("stops on an unrecognized page and when checkout cannot start", async () => {
+    const a = rig({ text: "Algo salió mal" });
+    await expect(a.driver.pay(await ctx(a.holds))).rejects.toThrow(/no se reconoció/);
+    expect(a.shots).toContain("unexpected");
+    const b = rig({ checkoutFails: true });
+    await expect(b.driver.pay(await ctx(b.holds))).rejects.toThrow(/No pude iniciar el pago/);
+    expect(b.api.state.cancelled).toHaveLength(1);
+  });
+});
+
+describe("preflight", () => {
+  it("runs read-only checks and flags a dangling hold", async () => {
+    const api = fakeCinepolis();
+    const dir = tmp();
+    const holds = new HoldService({ client: api.client, stateFile: join(dir, "h.json"), log: () => undefined });
+    const deps = {
+      provider: new CinepolisProvider({ client: api.client }),
+      client: api.client,
+      profile: DEFAULT_PROFILE,
+      holds,
+      ledger: new PurchaseLedger(join(dir, "p.json")),
+      arm: new PaymentArm(join(dir, "a.json")),
+      session: new SessionManager({ staticToken: fakeJwt(Math.floor(Date.now() / 1000) + 86400), log: () => undefined }),
+      paypalLoggedIn: async () => true,
+      env: { CINES_LOGIN_EMAIL: "u@example.com", CINES_BUYER_NAME: "A B", CINES_IMAP_USER: "b@example.com" },
+      chromePath: tmp(),
+    };
+    const future = showtime; // fixture session 102599 is in the fixture billboard
+    const checks = await runPreflight(future.id, 2, deps);
+    const by = Object.fromEntries(checks.map((c) => [c.name, c]));
+    expect(by["release-path"]?.ok).toBe(true);
+    expect(by["booking-check"]?.ok).toBe(true);
+    expect(by.session?.ok).toBe(true);
+    expect(by.paypal?.ok).toBe(true);
+    expect(by.state?.ok).toBe(true);
+    expect(by.arm?.detail).toMatch(/desarmado/);
+    expect(api.calls.some((c) => ["Order", "paypalWalletCheckout", "UserSessionId"].includes(c.op))).toBe(false);
+    await holds.hold({ cinema, showtime, movie: { name: "SF" }, layout: layout(), seats: [seat("D5")], defaultTicketType: "Admision General", accessToken: "AT" });
+    const again = await runPreflight(future.id, 2, deps);
+    expect(again.find((c) => c.name === "state")?.ok).toBe(false);
+    await holds.release();
+  });
 });

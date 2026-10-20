@@ -4,7 +4,10 @@
  * the hub (destructiveHint: true); the server enforces its own guardrails.
  */
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { existsSync, readFileSync } from "node:fs";
 import { z } from "zod";
+import type { ImageStore } from "./images.js";
+import type { PaymentArm } from "./order/arm.js";
 import { publicHold, type HoldService } from "./cinepolis/orders.js";
 import { CinesError } from "./errors.js";
 import { approvalRequired, capMxn, purchase, type PaymentDriver, type PurchaseLedger } from "./order/purchase.js";
@@ -21,8 +24,17 @@ export interface OrderToolContext extends ToolContext {
   ledger: PurchaseLedger;
   driver: PaymentDriver;
   dryRunDriver?: PaymentDriver;
+  arm?: PaymentArm;
+  images?: ImageStore;
+  baseUrl?: () => string;
   /** How long a tool waits before returning `in_progress` (default 110 s). */
   waitMs?: number;
+}
+
+/** Publish a private confirmation screenshot as a short-lived loopback URL for the hub. */
+function publishShot(ctx: OrderToolContext, path?: string): string | undefined {
+  if (!path || !ctx.images || !ctx.baseUrl || !existsSync(path)) return undefined;
+  return `${ctx.baseUrl()}/images/${ctx.images.put(readFileSync(path))}.png`;
 }
 
 const ACTS = { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true } as const;
@@ -149,7 +161,8 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
         return ok({
           hold: h ? { ...publicHold(h), secondsLeft: Math.max(0, Math.round((Date.parse(h.expiresAt) - Date.now()) / 1000)) } : null,
           pendingInput: ctx.broker.list(),
-          purchases: ctx.ledger.recent(3).map((e) => ({ at: e.at, totalMxn: e.totalMxn, status: e.status, bookingNumber: e.bookingNumber, dryRun: e.dryRun })),
+          purchases: ctx.ledger.recent(3).map((e) => ({ purchaseId: e.purchaseId, at: e.at, total: e.totalMxn, currency: "MXN", status: e.status, bookingNumber: e.bookingNumber, imageUrl: e.imageUrl, dryRun: e.dryRun })),
+          paymentArmed: ctx.arm?.status() ?? { armed: false },
           successfulPurchases: ctx.ledger.successes(),
           purchaseApprovalRequired: approvalRequired(ctx.ledger),
           session: ctx.session.status(),
@@ -184,7 +197,17 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
             driver: ctx.driver,
             dryRunDriver: ctx.dryRunDriver,
             cap: capMxn(),
+            arm: ctx.arm,
             ask: (kind, prompt, imageUrl) => ctx.broker.ask(kind, prompt, { imageUrl }),
+          }).then((r) => {
+            const imageUrl = publishShot(ctx, r.screenshotPath);
+            const { screenshotPath: _p, ...pub } = r;
+            const e = ctx.ledger.recent(20).find((x) => x.purchaseId === r.purchaseId);
+            if (e && imageUrl) {
+              e.imageUrl = imageUrl;
+              ctx.ledger.update(e);
+            }
+            return { ...pub, imageUrl, next: imageUrl ? "Envía imageUrl (confirmación) al usuario." : undefined };
           }),
         );
       } catch (e) {

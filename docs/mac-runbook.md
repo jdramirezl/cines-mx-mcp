@@ -76,6 +76,46 @@ The bot's Chrome runs **headed** (Cloudflare blocks headless Chrome on
 cinepolis.com); a window may appear briefly during keepalive (every 6 h) or a
 purchase. Keep the user logged in on the server Mac.
 
+## First real purchase (PayPal, 1 cheap ticket, you at the Mac)
+
+Real payment is off by default. It runs only after you arm it at the Mac,
+for one attempt, within 30 min.
+
+**(a) Hold → release test.** No money moves.
+1. From Telegram, ask Alfred for a cheap showtime and pick 1 seat.
+2. Approve the **hold** card. Alfred shows the summary with the total.
+3. On the purchase ✅/❌ card, press **❌**. Alfred releases the seats.
+4. `bin/cinesctl hold-status` → `"hold": null`. Optionally check on cinepolis.com that the seat is free again.
+
+**(b) Pre-flight and arm.**
+1. Ask Alfred for the showtime again and note its `showtimeId` (for example `570-102603`).
+2. `bin/cinesctl preflight <showtimeId> 1`. All lines must be `ok`.
+   It may open the bot's Chrome briefly, for the session and PayPal checks.
+3. `bin/cinesctl arm-payment`, then type `ARMAR`. This enables one real payment for 30 min.
+
+**(c) The purchase**, while you watch the Mac screen.
+1. In Telegram, pick the seat, approve the hold, then ✅ on the purchase card.
+2. On the Mac, the bot's Chrome window comes to the front with the DEUNA checkout. It shows "Redirigiendo… PayPal".
+3. A **PayPal window** opens: `paypal.com/checkoutnow?token=…`.
+4. If PayPal asks, log in, do any 2FA / SMS / "new device" check, then **approve** the payment.
+   The script waits up to 15 min (`CINES_PAYPAL_WAIT_MIN`) and keeps the seats alive meanwhile.
+5. When Cinépolis confirms, the script saves a screenshot and Alfred sends it with the booking number.
+   Screenshots go to `~/Library/Application Support/cines-mx/screenshots/` (0700).
+
+If you **close the window**, or the wait runs out with no booking, the seats are released and nothing is charged.
+If the payment ends in an unclear state, the seats are **not** released.
+Either way the payment is **never retried**: check your Cinépolis / PayPal e-mail.
+The arm is used up either way; arm again only for a new, deliberate attempt.
+
+**After.**
+- `bin/cinesctl hold-status`:
+  - `"hold": null`
+  - the newest purchase is `paid` with `bookingNumber` and `screenshotPath`
+  - `paymentArmed.armed: false`
+- The ticket e-mail also arrives in your main inbox.
+
+Emergency: `bin/cinesctl release-hold` and `bin/cinesctl disarm-payment`.
+
 ## Uninstall
 
 ```bash

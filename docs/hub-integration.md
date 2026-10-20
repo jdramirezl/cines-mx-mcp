@@ -63,7 +63,8 @@ or `{status:"needs_email_code", challengeId, …}` (see Secure input).
 method needs one, the call returns `needs_cvv` and the secret goes through
 `cines_submit_code` (hub-only), so it can never come from the model.
 
-→ `{status:"paid", purchaseId, bookingNumber, transactionNumber?, total, currency:"MXN", seats}`
+→ `{status:"paid", purchaseId, bookingNumber, transactionNumber?, total, currency:"MXN", seats, imageUrl?}`
+(`imageUrl` = confirmation screenshot, loopback, 30 min → `sendPhoto`)
 or `{status:"needs_cvv" | "needs_3ds" | "needs_email_code", challengeId, …}`.
 
 **`cines_submit_code`** — HUB-ONLY, never offered to the model
@@ -82,8 +83,14 @@ Server-enforced rules (the hub enforces them too):
 - `userApproved: true` required for the first 3 purchases
 - one purchase in flight; each hold is paid at most once; a payment is never retried (on failure the user checks e-mail)
 
-Real payment is **disabled** until the live PayPal flow is verified with the
-user. Until then a real call fails with `CINES_PAYMENT_FAILED … aún no está habilitado`; `dryRun: true` works now.
+Real payment is **off unless armed** on the server Mac (`cinesctl arm-payment`,
+interactive, one attempt, ≤ 60 min). Unarmed, a real call fails with
+`CINES_PAYMENT_FAILED … no está armado` before anything is recorded;
+`dryRun: true` always works. `cines_hold_status` reports `paymentArmed`.
+The PayPal step can take minutes (the user approves at the Mac): the call
+returns `{status:"in_progress", jobId}` after ~110 s; poll `cines_hold_status`
+until `purchases[0].status` is `paid` (with `bookingNumber`, `imageUrl`) or
+`failed` / `unknown`.
 
 Hub flow:
 1. `cines_seat_map` → `sendPhoto(imageUrl)`; the user replies with seats → `cines_validate_seats`.
