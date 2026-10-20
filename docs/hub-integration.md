@@ -88,6 +88,25 @@ Real payment is **off unless armed** on the server Mac (`cinesctl arm-payment`,
 interactive, one attempt, ≤ 60 min). Unarmed, a real call fails with
 `CINES_PAYMENT_FAILED … no está armado` before anything is recorded;
 `dryRun: true` always works. `cines_hold_status` reports `paymentArmed`.
+PIN arming (optional, set at the Mac with `cinesctl set-arm-pin`): when the
+server is NOT armed and a PIN is configured, `cines_purchase` first returns
+`{status:"needs_arm_pin", secure:true, challengeId, kind:"arm_pin", prompt, expiresAt}`
+(6–8 digits). The hub collects it with secure input and calls
+`cines_submit_code`; a correct PIN arms exactly this hold and total for one
+attempt and the same call continues to `needs_cvv` (card) or the PayPal step.
+Wrong PIN → `CINES_PAYMENT_FAILED` "PIN incorrecto (te quedan N intentos; espera 30 s)…"
+(nothing recorded or charged, the hold stays; the user may retry `cines_purchase`
+after 30 s). Within 30 s → `CINES_BAD_REQUEST` "Espera N s…" without asking.
+Third wrong PIN → disabled until reset at the Mac; then `CINES_PAYMENT_FAILED`
+"…desactivado…" without asking. Armed at the Mac → no PIN step.
+`cines_hold_status.pinArming` = `{configured, disabled, failures, waitSeconds}`;
+`paymentArmed.via` = `"mac" | "pin"`.
+
+Order for a card purchase: `needs_arm_pin` (only if unarmed + PIN set) →
+`needs_cvv` → `paid`. Every `needs_*` challenge is also listed in
+`cines_hold_status.pendingInput` (`{requestId, kind, prompt, expiresAt}`; `requestId` = `challengeId`),
+so after an `in_progress` the hub enters secure mode from there.
+
 Card flow: `cines_purchase` → `{status:"needs_cvv", challengeId, prompt}` (the
 prompt names the card, e.g. `*1234`, and the total) → secure input →
 `cines_submit_code` → `paid` (or an error). The CVV must never reach the model,
@@ -125,7 +144,8 @@ Hub behaviour:
 |---|---|---|---|
 | `needs_email_code` | `email_code` | session expired and the bot mailbox did not deliver the code within ~150 s | 6 digits |
 | `needs_cvv` | `cvv` | `method:"card"` (the default) | 3–4 digits |
-| `needs_3ds` | `otp_3ds` | bank 3-D Secure / OTP | 4–10 alphanumerics |
+| `needs_3ds` | `otp_3ds` | bank 3-D Secure / OTP (not used yet: 3DS cards are refused before any charge) | 4–10 alphanumerics |
+| `needs_arm_pin` | `arm_pin` | real purchase, server not armed, PIN configured | 6–8 digits |
 
 A call that takes longer than ~110 s returns `{status:"in_progress", jobId}`; poll `cines_hold_status`.
 

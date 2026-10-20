@@ -176,6 +176,59 @@ async function main(argv: string[]): Promise<number> {
       console.log(`✅ Pago ARMADO hasta ${st.expiresAt} para un solo intento. Desarmar: bin/cinesctl disarm-payment`);
       return 0;
     }
+    case "set-arm-pin":
+    case "clear-arm-pin": {
+      const { PinArm } = await import("./order/pin.js");
+      const { pinFile } = await import("./services.js");
+      const pin = new PinArm(pinFile());
+      if (cmd === "clear-arm-pin") {
+        pin.clear();
+        console.log("PIN de armado borrado; solo se puede armar en la Mac.");
+        return 0;
+      }
+      if (!process.stdin.isTTY) {
+        console.error("set-arm-pin requiere una terminal interactiva (no se puede fijar desde scripts ni agentes).");
+        return 2;
+      }
+      const ask = (q: string) =>
+        new Promise<string>((resolve) => {
+          // Hidden input: raw mode, no echo, nothing written to history or logs.
+          process.stdout.write(q);
+          const stdin = process.stdin;
+          let v = "";
+          stdin.setRawMode(true);
+          stdin.resume();
+          const on = (b: Buffer) => {
+            for (const ch of b.toString("utf8")) {
+              if (ch === "\r" || ch === "\n") {
+                stdin.setRawMode(false);
+                stdin.pause();
+                stdin.off("data", on);
+                process.stdout.write("\n");
+                return resolve(v);
+              }
+              if (ch === "\u0003") process.exit(130);
+              if (ch === "\u007f") v = v.slice(0, -1);
+              else v += ch;
+            }
+          };
+          stdin.on("data", on);
+        });
+      const a = await ask("Nuevo PIN de compras (6 a 8 dígitos): ");
+      const b = await ask("Repite el PIN: ");
+      if (a !== b) {
+        console.error("No coinciden; no cambié nada.");
+        return 1;
+      }
+      try {
+        pin.set(a);
+      } catch (e) {
+        console.error((e as Error).message);
+        return 1;
+      }
+      console.log("✅ PIN guardado (solo su hash). Desde Telegram arma UNA compra a la vez; 3 PIN incorrectos lo desactivan.");
+      return 0;
+    }
     case "disarm-payment": {
       const { PaymentArm } = await import("./order/arm.js");
       const { armFile } = await import("./services.js");
@@ -241,6 +294,7 @@ async function main(argv: string[]): Promise<number> {
         holds,
         ledger: new PurchaseLedger(join(dir, "purchases.json")),
         arm: new PaymentArm(armFile()),
+        pin: new (await import("./order/pin.js")).PinArm((await import("./services.js")).pinFile()),
         session,
         paypalLoggedIn: () => browser.paypalLoggedIn(),
         savedCards: async () => {
@@ -258,7 +312,7 @@ async function main(argv: string[]): Promise<number> {
     }
     default:
       console.error(
-        "usage: cines probe | listings [cinemaId] [date] | login | paypal-login | session | mailbox-test [hours] | preflight <showtimeId> [tickets] | arm-payment [min] | disarm-payment | hold-status | release-hold [holdId]",
+        "usage: cines probe | listings [cinemaId] [date] | login | paypal-login | session | mailbox-test [hours] | preflight <showtimeId> [tickets] | arm-payment [min] | disarm-payment | set-arm-pin | clear-arm-pin | hold-status | release-hold [holdId]",
       );
       return 2;
   }

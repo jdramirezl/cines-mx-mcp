@@ -30,6 +30,10 @@ import type { PaymentContext, PaymentDriver, PaymentMethod, PaymentResult } from
 
 export const CARD_KEY = "bank_card_deuna";
 export const CARD_3DS_KEY = "bank_card_3ds";
+/** Plain-Spanish refusal when the bank asks for 3-D Secure (not supported yet). */
+export const MSG_3DS = "Tu banco pidió una verificación extra (3-D Secure) que todavía no puedo hacer; no cobré nada y liberé los asientos. Intenta con PayPal o desde la app de Cinépolis.";
+const RE_3DS = /3-?d\s*secure|3ds|autenticaci[oó]n|challenge/i;
+
 export const DEUNA_SDK_URL = "https://cdn.deuna.io/web-sdk/v1.6/index.js";
 
 export interface PaymentMethodInfo {
@@ -222,10 +226,11 @@ export class CardDriver implements PaymentDriver {
     const { hold, log } = ctx;
     const sleep = this.d.sleep ?? ((ms: number) => new Promise((r) => setTimeout(r, ms)));
     const now = this.d.now ?? Date.now;
-    const unpaid = async (why: string): Promise<never> => {
+    const unpaid = async (why: string, exact = false): Promise<never> => {
       await this.d.holds.releaseUnpaid(hold.holdId).catch((e: unknown) => log(`release failed: ${(e as Error).message}`));
-      throw new CinesError("CINES_PAYMENT_FAILED", `${why} No se cobró nada y liberé los asientos.`);
+      throw new CinesError("CINES_PAYMENT_FAILED", exact ? why : `${why} No se cobró nada y liberé los asientos.`);
     };
+    const needs3ds = { flag: false };
     const wanted = ctx.cardLast4 ?? this.d.defaultLastFour;
 
     // 1. Payment method, DEUNA user token (read-only; nothing charged yet).
@@ -239,13 +244,14 @@ export class CardDriver implements PaymentDriver {
       const methods = await paymentMethods(this.d.client, hold.priv.orderSessionId, token);
       const card = methods.find((m) => m.key === CARD_KEY && m.enabled);
       if (!card) {
-        const has3ds = methods.some((m) => m.key === CARD_3DS_KEY && m.enabled);
-        throw new Error(has3ds ? "Cinépolis pide 3-D Secure para tarjeta en esta compra y ese flujo aún no está soportado; usa PayPal" : "Cinépolis no ofrece pago con tarjeta para esta compra");
+        needs3ds.flag = methods.some((m) => m.key === CARD_3DS_KEY && m.enabled);
+        throw new Error(needs3ds.flag ? "3-D Secure" : "Cinépolis no ofrece pago con tarjeta para esta compra");
       }
       if (!card.iframeUrl || !card.publicKey) throw new Error("faltan datos del monedero DEUNA en payment_methods");
       method = card;
       userToken = await deunaUserToken(this.d.client, buyer, token);
     } catch (e) {
+      if (needs3ds.flag) return unpaid(MSG_3DS, true);
       return unpaid(`No pude preparar el pago con tarjeta (${(e as Error).message}).`);
     }
     log("card: payment method and wallet token ready");
@@ -279,6 +285,7 @@ export class CardDriver implements PaymentDriver {
       }));
     } catch (e) {
       const msg = e instanceof CinesError ? e.message : `La ventana del monedero falló (${(e as Error).message})`;
+      if (RE_3DS.test(msg)) return unpaid(MSG_3DS, true);
       return unpaid(`No se completó el paso de la tarjeta: ${msg}.`);
     }
     if (!vault.id) return unpaid("El monedero DEUNA no confirmó la tarjeta.");
@@ -311,6 +318,7 @@ export class CardDriver implements PaymentDriver {
     if (outcome.kind === "charged") {
       return { bookingNumber: outcome.booking.bookingNumber!, transactionNumber: outcome.booking.transactionNumber };
     }
+    if (outcome.kind === "declined" && RE_3DS.test(outcome.why)) return unpaid(MSG_3DS, true);
     if (outcome.kind === "declined") return unpaid(`Cinépolis rechazó el pago con la tarjeta *${lastFour} (${outcome.why}).`);
     throw new CinesError("CINES_UNAVAILABLE", `El resultado del pago es incierto (${outcome.why}). No libero los asientos ni reintento; revisa tu correo de Cinépolis y tu banco.`, { retryable: false });
   }

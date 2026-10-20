@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { HoldService } from "./cinepolis/orders.js";
 import type { CinepolisProvider } from "./cinepolis/provider.js";
 import { PaymentArm } from "./order/arm.js";
+import { PinArm } from "./order/pin.js";
 import { PaypalDriver, buyerFromEnv } from "./order/paypal.js";
 import { CardDriver } from "./order/card.js";
 import { DryRunDriver, MethodRouter, NotYetEnabledDriver, PurchaseLedger, capMxn, type PaymentDriver } from "./order/purchase.js";
@@ -22,11 +23,17 @@ export interface Services {
   dryRunDriver: PaymentDriver;
   /** One-shot arm; real payment runs only when armed via `cinesctl arm-payment`. */
   arm?: PaymentArm;
+  /** Optional PIN arming (set at the Mac with `cinesctl set-arm-pin`). */
+  pin?: PinArm;
   stop: () => void;
 }
 
 export function armFile(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
   return join(env.CINES_STATE_DIR ?? stateDir(home), "payment-arm.json");
+}
+
+export function pinFile(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
+  return join(env.CINES_STATE_DIR ?? stateDir(home), "arm-pin.json");
 }
 
 export function stateDir(home = homedir()): string {
@@ -86,6 +93,7 @@ export function buildServices(provider: CinepolisProvider, env = process.env, ho
         })
       : new NotYetEnabledDriver(),
     arm: new PaymentArm(armFile(env, home)),
+    pin: new PinArm(pinFile(env, home)),
     dryRunDriver: new DryRunDriver(),
     stop: () => timer && clearInterval(timer),
   };

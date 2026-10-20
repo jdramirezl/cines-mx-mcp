@@ -133,7 +133,18 @@ Alfred's secure input.
 
 Outcomes: declined or any failure before the charge → seats released, nothing charged.
 No clear answer from Cinépolis → seats kept, never retried: check your e-mail and bank.
-3-D Secure cards are refused before any charge (not supported yet).
+3-D Secure: if the bank asks for it, nothing is charged and the seats are released
+("Tu banco pidió una verificación extra…"); use PayPal or the Cinépolis app.
+
+### Arming from Telegram with a PIN (optional)
+
+Once, at the Mac: `bin/cinesctl set-arm-pin` (hidden input, typed twice, 6–8
+digits, not repeated or consecutive). Only a salted scrypt hash is stored
+(`state/arm-pin.json`, 0600). Afterwards an unarmed purchase asks the PIN in
+Telegram's secure mode before the CVV; a correct PIN arms that one purchase
+only (10 min). One attempt every 30 s; 3 wrong in a row disable it until you run
+`set-arm-pin` again. `bin/cinesctl clear-arm-pin` removes it. `arm-payment`
+still works and skips the PIN.
 
 Never start the server with `DEBUG=pw:*`: Playwright would log typed keys.
 

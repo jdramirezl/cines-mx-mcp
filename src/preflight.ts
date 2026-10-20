@@ -32,6 +32,8 @@ export interface PreflightDeps {
   arm: PaymentArm;
   session: SessionManager;
   paypalLoggedIn?: () => Promise<boolean>;
+  /** PIN arming state (informational). */
+  pin?: { status(): { configured: boolean; disabled: boolean; failures: number } };
   /** Saved cards in the user's DEUNA wallet (read-only browser check). */
   savedCards?: () => Promise<{ lastFour: string; isDefault?: boolean; expired?: boolean }[]>;
   serverUrl?: string;
@@ -44,8 +46,9 @@ async function check(name: string, f: () => Promise<string>, info = false): Prom
   try {
     return { name, ok: true, detail: await f(), info };
   } catch (e) {
-    const { error } = toErrorShape(e);
-    return { name, ok: false, detail: error.message, info };
+    // Plain errors here are our own check messages: show them without the generic prefix.
+    const detail = e instanceof CinesError ? toErrorShape(e).error.message : e instanceof Error ? e.message : String(e);
+    return { name, ok: false, detail, info };
   }
 }
 
@@ -163,6 +166,10 @@ export async function runPreflight(showtimeId: string, tickets: number, d: Prefl
   );
   const a = d.arm.status();
   out.push({ name: "arm", ok: true, info: true, detail: a.armed ? `ARMADO (${a.minutesLeft} min restantes)` : "desarmado (normal hasta el paso final)" });
+  if (d.pin) {
+    const p = d.pin.status();
+    out.push({ name: "arm-pin", ok: true, info: true, detail: !p.configured ? "sin PIN (armar solo en la Mac; opcional: bin/cinesctl set-arm-pin)" : p.disabled ? "PIN DESACTIVADO tras 3 intentos fallidos: bin/cinesctl set-arm-pin" : `PIN configurado: puedes armar una compra desde Telegram${p.failures ? ` (${p.failures} fallo(s) seguidos)` : ""}` });
+  }
   out.push({ name: "approval", ok: true, info: true, detail: approvalRequired(d.ledger) ? `se pedirá ✅ (compras exitosas: ${d.ledger.successes()})` : "sin ✅ (ya hubo 3 compras)" });
   return out;
 }

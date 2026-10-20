@@ -15,16 +15,26 @@ import { CinesError } from "../errors.js";
 export const ARM_DEFAULT_MIN = 30;
 export const ARM_MAX_MIN = 60;
 
+/** A PIN arm covers one specific hold and total. */
+export interface ArmBinding {
+  holdId: string;
+  totalMxn: number;
+}
+
 interface ArmFile {
   nonce: string;
   armedAt: string;
   expiresAt: string;
+  via?: "mac" | "pin";
+  bind?: ArmBinding;
 }
 
 export interface ArmStatus {
   armed: boolean;
   expiresAt?: string;
   minutesLeft?: number;
+  via?: "mac" | "pin";
+  holdId?: string;
 }
 
 export class PaymentArm {
@@ -42,10 +52,10 @@ export class PaymentArm {
     }
   }
 
-  arm(minutes = ARM_DEFAULT_MIN): ArmStatus {
+  arm(minutes = ARM_DEFAULT_MIN, bind?: ArmBinding): ArmStatus {
     const m = Math.min(Math.max(1, Math.round(minutes)), ARM_MAX_MIN);
     mkdirSync(dirname(this.file), { recursive: true, mode: 0o700 });
-    const f: ArmFile = { nonce: randomBytes(8).toString("hex"), armedAt: new Date(this.now()).toISOString(), expiresAt: new Date(this.now() + m * 60_000).toISOString() };
+    const f: ArmFile = { nonce: randomBytes(8).toString("hex"), armedAt: new Date(this.now()).toISOString(), expiresAt: new Date(this.now() + m * 60_000).toISOString(), via: bind ? "pin" : "mac", bind };
     writeFileSync(this.file, JSON.stringify(f), { mode: 0o600 });
     return this.status();
   }
@@ -62,11 +72,11 @@ export class PaymentArm {
       this.disarm();
       return { armed: false };
     }
-    return { armed: true, expiresAt: f.expiresAt, minutesLeft: Math.ceil(left / 60_000) };
+    return { armed: true, expiresAt: f.expiresAt, minutesLeft: Math.ceil(left / 60_000), via: f.via ?? "mac", holdId: f.bind?.holdId };
   }
 
   /** Consume the arm for one payment attempt. Throws if not armed. Atomic across processes. */
-  consume(): void {
+  consume(target?: ArmBinding): void {
     const tmp = `${this.file}.consumed-${process.pid}-${randomBytes(4).toString("hex")}`;
     try {
       renameSync(this.file, tmp); // only one consumer can win the rename
@@ -83,6 +93,9 @@ export class PaymentArm {
     }
     if (!f || Date.parse(f.expiresAt) <= this.now()) {
       throw new CinesError("CINES_PAYMENT_FAILED", "El armado del pago expiró. Vuelve a armarlo con bin/cinesctl arm-payment.");
+    }
+    if (f.bind && (!target || f.bind.holdId !== target.holdId || Math.abs(f.bind.totalMxn - target.totalMxn) > 0.005)) {
+      throw new CinesError("CINES_PAYMENT_FAILED", "El armado por PIN era para otro apartado o total; se descartó. Vuelve a intentarlo.");
     }
   }
 }

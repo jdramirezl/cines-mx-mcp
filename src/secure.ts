@@ -11,12 +11,13 @@
 import { randomBytes } from "node:crypto";
 import { CinesError } from "./errors.js";
 
-export type SecureKind = "email_code" | "cvv" | "otp_3ds";
+export type SecureKind = "email_code" | "cvv" | "otp_3ds" | "arm_pin";
 
 export const SECURE_FORMAT: Record<SecureKind, { re: RegExp; hint: string }> = {
   email_code: { re: /^\d{6}$/, hint: "6 dígitos" },
   cvv: { re: /^\d{3,4}$/, hint: "3 o 4 dígitos" },
   otp_3ds: { re: /^[0-9A-Za-z]{4,10}$/, hint: "4 a 10 caracteres" },
+  arm_pin: { re: /^\d{6,8}$/, hint: "6 a 8 dígitos" },
 };
 
 export interface SecureRequest {

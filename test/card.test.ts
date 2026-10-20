@@ -267,7 +267,7 @@ describe("CardDriver", () => {
     const cases: [string, Parameters<typeof fakeApi>[0], UiOpts, RegExp][] = [
       ["vault error", {}, { vault: Object.assign(new Error("x"), {}) }, /paso de la tarjeta/],
       ["no card method", { methods: { payment_methods: fx("paymentMethods").data.payment_methods.filter((m: any) => m.key !== "bank_card_deuna") } }, {}, /no ofrece pago con tarjeta/],
-      ["3DS only", { methods: { payment_methods: [{ ...fx("paymentMethods").data.payment_methods[0], key: "bank_card_3ds" }] } }, {}, /3-D Secure.*no está soportado; usa PayPal/],
+      ["3DS only", { methods: { payment_methods: [{ ...fx("paymentMethods").data.payment_methods[0], key: "bank_card_3ds" }] } }, {}, /^Tu banco pidió una verificación extra \(3-D Secure\).*no cobré nada y liberé los asientos\. Intenta con PayPal o desde la app de Cinépolis\. No se reintentará/],
       ["no saved card", {}, { cards: [], all: [] }, /no tienes tarjetas/],
     ];
     for (const [name, apiOpts, uiOpts, re] of cases) {
@@ -388,7 +388,7 @@ describe("card preflight", () => {
       savedCards: () => listSavedCards({ client, accessToken: async () => "AT", buyer: async () => BUYER, ui }, "fresh"),
       env: {}, chromePath: tmp(),
     });
-    expect(checks.find((c) => c.name === "card")).toMatchObject({ ok: true, info: true, detail: expect.stringMatching(/se verifica al apartar/) });
+    expect(checks.find((c) => c.name === "card")).toMatchObject({ ok: true, info: true, detail: expect.stringMatching(/^se verifica al apartar/) });
   });
 
   it("the purchase path asks payment_methods for the hold's own order session", async () => {

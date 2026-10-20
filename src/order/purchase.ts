@@ -17,6 +17,9 @@ import type { Hold, HoldService } from "../cinepolis/orders.js";
 import { CinesError } from "../errors.js";
 import type { SecureKind } from "../secure.js";
 import type { PaymentArm } from "./arm.js";
+import type { PinArm } from "./pin.js";
+
+export const PIN_ARM_MIN = 10;
 
 export const HARD_CAP_MXN = 1000;
 export const APPROVAL_FREE_AFTER = 3;
@@ -164,6 +167,8 @@ export interface PurchaseDeps {
   cap?: number;
   /** One-shot arm consumed by the first real attempt; missing = real payment disabled. */
   arm?: PaymentArm;
+  /** Optional PIN arming from the hub's secure input when the server is not armed. */
+  pin?: PinArm;
   now?: () => number;
   log?: (m: string) => void;
 }
@@ -199,7 +204,26 @@ export async function purchase(args: PurchaseArgs, d: PurchaseDeps) {
     const prior = d.ledger.find(hold.holdId);
     if (prior) throw new CinesError("CINES_PAYMENT_FAILED", `Ya se intentó pagar este apartado (${prior.status}); nunca reintento un pago. Revisa tu correo.`);
     if (!d.arm) throw new CinesError("CINES_PAYMENT_FAILED", "El pago real no está habilitado en este servidor.");
-    d.arm.consume(); // one attempt per arm, whatever happens next
+    const target = { holdId: hold.holdId, totalMxn: hold.totalMxn };
+    if (!d.arm.status().armed && d.pin?.usable()) {
+      // Not armed at the Mac: arm this one purchase with the user's PIN (secure input, never logged).
+      const pin = await d.ask("arm_pin", `Escribe tu PIN de compras para autorizar este pago de $${hold.totalMxn} MXN.`);
+      const r = d.pin.verify(pin);
+      log(`arm pin attempt: ${r.ok ? "ok" : "wrong"}`);
+      if (!r.ok) {
+        throw new CinesError(
+          "CINES_PAYMENT_FAILED",
+          r.disabled
+            ? "PIN incorrecto. Desactivé el armado por PIN; en la Mac: bin/cinesctl set-arm-pin. No se cobró nada."
+            : `PIN incorrecto (te quedan ${r.attemptsLeft} intento${r.attemptsLeft === 1 ? "" : "s"}; espera 30 s). No se cobró nada.`,
+        );
+      }
+      const cur = d.holds.get(hold.holdId);
+      if (!cur || cur.status !== "held" || Date.parse(cur.expiresAt) <= now()) throw new CinesError("CINES_HOLD_EXPIRED", "Los asientos se liberaron mientras esperaba el PIN; vuelve a elegirlos.");
+      d.arm.arm(PIN_ARM_MIN, target);
+      log("payment armed by pin for this hold");
+    }
+    d.arm.consume(target); // one attempt per arm, whatever happens next
     log("payment arm consumed");
   }
   const entry = d.ledger.add({ purchaseId: `pur_${randomBytes(6).toString("hex")}`, holdId: hold.holdId, at: new Date(now()).toISOString(), totalMxn: hold.totalMxn, method: dryRun ? "dry-run" : method, status: "started", dryRun });

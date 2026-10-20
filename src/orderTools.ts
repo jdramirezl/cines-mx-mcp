@@ -8,6 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { z } from "zod";
 import type { ImageStore } from "./images.js";
 import type { PaymentArm } from "./order/arm.js";
+import type { PinArm } from "./order/pin.js";
 import { publicHold, type HoldService } from "./cinepolis/orders.js";
 import { CinesError, toErrorShape } from "./errors.js";
 import { approvalRequired, capMxn, purchase, type PaymentDriver, type PurchaseLedger } from "./order/purchase.js";
@@ -25,6 +26,7 @@ export interface OrderToolContext extends ToolContext {
   driver: PaymentDriver;
   dryRunDriver?: PaymentDriver;
   arm?: PaymentArm;
+  pin?: PinArm;
   images?: ImageStore;
   baseUrl?: () => string;
   /** How long a tool waits before returning `in_progress` (default 110 s). */
@@ -43,7 +45,7 @@ const ACTS = { readOnlyHint: false, destructiveHint: true, idempotentHint: false
 const SAFE_WRITE = { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: true } as const;
 const READ = { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false } as const;
 
-const STATUS_FOR: Record<string, string> = { email_code: "needs_email_code", otp_3ds: "needs_3ds", cvv: "needs_cvv" };
+const STATUS_FOR: Record<string, string> = { email_code: "needs_email_code", otp_3ds: "needs_3ds", cvv: "needs_cvv", arm_pin: "needs_arm_pin" };
 
 function needsInput(r: { requestId: string; kind: string; prompt: string; expiresAt: string; imageUrl?: string }) {
   return ok({ status: STATUS_FOR[r.kind] ?? "needs_input", challengeId: r.requestId, kind: r.kind, prompt: r.prompt, expiresAt: r.expiresAt, imageUrl: r.imageUrl, secure: true });
@@ -202,6 +204,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
           pendingInput: ctx.broker.list(),
           purchases: ctx.ledger.recent(3).map((e) => ({ purchaseId: e.purchaseId, at: e.at, total: e.totalMxn, currency: "MXN", status: e.status, bookingNumber: e.bookingNumber, imageUrl: e.imageUrl, dryRun: e.dryRun })),
           paymentArmed: ctx.arm?.status() ?? { armed: false },
+          pinArming: ctx.pin?.status() ?? { configured: false, disabled: false, failures: 0, waitSeconds: 0 },
           lastJob: currentLastJob(),
           successfulPurchases: ctx.ledger.successes(),
           purchaseApprovalRequired: approvalRequired(ctx.ledger),
@@ -239,6 +242,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
             dryRunDriver: ctx.dryRunDriver,
             cap: capMxn(),
             arm: ctx.arm,
+            pin: ctx.pin,
             ask: (kind, prompt, imageUrl) => ctx.broker.ask(kind, prompt, { imageUrl }),
           }).then((r) => {
             const imageUrl = publishShot(ctx, r.screenshotPath);
@@ -264,7 +268,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
     {
       title: "Deliver a secret the user typed (hub only)",
       description:
-        "HUB ONLY — must not be exposed to the language model. Delivers the user's secure-input reply (6-digit e-mail code, 3DS/OTP code or CVV) for a challengeId from a needs_* result, and continues the paused operation, returning its next result (held / paid / another needs_* / error). The value is never logged or returned.",
+        "HUB ONLY — must not be exposed to the language model. Delivers the user's secure-input reply (6-digit e-mail code, 3DS/OTP code, CVV or arming PIN) for a challengeId from a needs_* result, and continues the paused operation, returning its next result (held / paid / another needs_* / error). The value is never logged or returned.",
       inputSchema: { challengeId: z.string(), code: z.string().min(1).max(32) },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: true },
     },
