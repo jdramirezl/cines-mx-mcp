@@ -191,7 +191,10 @@ export class BotBrowser implements SessionBrowser, PaymentUi {
       const page = ctx.pages()[0] ?? (await ctx.newPage());
       await page.goto("https://www.paypal.com/myaccount/summary", { waitUntil: "domcontentloaded", timeout: 45_000 });
       await page.waitForTimeout(4000);
-      return !/\/(signin|authflow|login)/i.test(page.url());
+      // Logged out = any redirect to a sign-in flow, on any PayPal host/locale.
+      const u = String(page.url());
+      if (/\/(signin|authflow|login|webapps\/auth)/i.test(u)) return false;
+      return /\/myaccount\b/i.test(u);
     });
   }
 

@@ -8,7 +8,7 @@ import type { GraphQLClient } from "./cinepolis/client.js";
 import type { HoldService } from "./cinepolis/orders.js";
 import type { CinepolisProvider } from "./cinepolis/provider.js";
 import { CANCEL_ORDER, ORDER_DISPATCHER, PROFILE } from "./cinepolis/queries.js";
-import { toErrorShape } from "./errors.js";
+import { CinesError, toErrorShape } from "./errors.js";
 import type { PaymentArm } from "./order/arm.js";
 import { approvalRequired, capMxn, type PurchaseLedger } from "./order/purchase.js";
 import type { Profile } from "./profile.js";
@@ -112,7 +112,12 @@ export async function runPreflight(showtimeId: string, tickets: number, d: Prefl
   );
   out.push(
     await check("booking-check", async () => {
-      await d.client.call(ORDER_DISPATCHER, { orderSessionId: `${"0".repeat(36)}-0`, countryId: d.client.countryId }, { noDedupe: true });
+      try {
+        await d.client.call(ORDER_DISPATCHER, { orderSessionId: `${"0".repeat(36)}-0`, countryId: d.client.countryId }, { noDedupe: true });
+      } catch (e) {
+        // With a dummy id Cinépolis answers a business error ("no pudimos completar tu pedido"): reachable.
+        if (!(e instanceof CinesError && e.code === "CINES_BAD_REQUEST")) throw e;
+      }
       return "OrderDispatcher (/v1/purchase) responde";
     }),
   );
@@ -128,12 +133,9 @@ export async function runPreflight(showtimeId: string, tickets: number, d: Prefl
     }),
   );
   if (d.paypalLoggedIn) {
-    out.push(
-      await check("paypal", async () => {
-        must(await d.paypalLoggedIn!(), "PayPal no tiene sesión en el perfil del bot (bin/cinesctl paypal-login)");
-        return "PayPal con sesión en el perfil del bot";
-      }),
-    );
+    // Not required: the PayPal window opens headed at the Mac during checkout and the user can log in there.
+    const logged = await d.paypalLoggedIn!().catch(() => false);
+    out.push({ name: "paypal", ok: true, info: true, detail: logged ? "PayPal con sesión en el perfil del bot" : "sin sesión de PayPal detectada: tendrás que iniciar sesión en la ventana de PayPal durante el pago" });
   }
   out.push(
     await check("state", async () => {

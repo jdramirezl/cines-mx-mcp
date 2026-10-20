@@ -73,7 +73,12 @@ function fakeCinepolis() {
       }
       case "ExtendOrder": state.extended++; data = { ExtendOrder: { extendOrderResult: { status: state.held.has(v.user_session_id) ? "true" : "false" } } }; break;
       case "paypalWalletCheckout": state.checkouts++; data = { paypalWalletCheckout: { orderToken: { order_token: `tok_${v.order_session_id.slice(0, 8)}` } } }; break;
-      case "OrderDispatcher": data = { orderDispatcher: state.dispatcher() }; break;
+      case "OrderDispatcher": {
+        const d = state.dispatcher();
+        if (d === null && v.orderSessionId.startsWith("0000")) return { status: 200, headers: {}, text: JSON.stringify({ data: { orderDispatcher: null }, errors: [{ message: "Lo sentimos, no pudimos completar tu pedido." }] }) };
+        data = { orderDispatcher: d };
+        break;
+      }
       case "Profile": data = { member: { levelName: "Fan" } }; break;
       default: return { status: 200, headers: {}, text: JSON.stringify({ errors: [{ message: `unknown op ${op}` }] }) };
     }
@@ -584,6 +589,8 @@ describe("preflight", () => {
     expect(by["booking-check"]?.ok).toBe(true);
     expect(by.session?.ok).toBe(true);
     expect(by.paypal?.ok).toBe(true);
+    const noPaypal = await runPreflight(future.id, 2, { ...deps, paypalLoggedIn: async () => false });
+    expect(noPaypal.find((c) => c.name === "paypal")).toMatchObject({ ok: true, info: true, detail: expect.stringMatching(/iniciar sesión/) });
     expect(by.state?.ok).toBe(true);
     expect(by.arm?.detail).toMatch(/desarmado/);
     expect(api.calls.some((c) => ["Order", "paypalWalletCheckout", "UserSessionId"].includes(c.op))).toBe(false);
