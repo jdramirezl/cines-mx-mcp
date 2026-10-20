@@ -1,3 +1,4 @@
+import { CinesError } from "../src/errors.js";
 import { mkdtempSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -399,6 +400,37 @@ describe("MCP order tools", () => {
     const rel = await call("cines_release_hold");
     expect(rel.value.status).toBe("released");
   }, 20_000);
+});
+
+describe("lastJob tracking", () => {
+  it("a hold that outlives the wait and then fails shows up as lastJob.failed", async () => {
+    const { registerOrderTools } = await import("../src/orderTools.js");
+    const { McpServer } = await import("@modelcontextprotocol/sdk/server/mcp.js");
+    const { InMemoryTransport } = await import("@modelcontextprotocol/sdk/inMemory.js");
+    const api = fakeCinepolis();
+    const provider = new CinepolisProvider({ client: api.client });
+    const dir = tmp();
+    const slow = new SessionManager({ log: () => undefined }); // no browser/login -> rejects
+    (slow as any).getAccessToken = () => new Promise((_, rej) => setTimeout(() => rej(new CinesError("CINES_SESSION_EXPIRED", "La sesión expiró.")), 150));
+    const server = new McpServer({ name: "t", version: "1" });
+    registerOrderTools(server, {
+      provider, profile: DEFAULT_PROFILE, now: () => new Date(NOW),
+      holds: new HoldService({ client: api.client, stateFile: join(dir, "h.json"), log: () => undefined }),
+      session: slow, broker: new SecureInputBroker(), ledger: new PurchaseLedger(join(dir, "p.json")),
+      driver: new NotYetEnabledDriver(), holdWaitMs: 30,
+    });
+    const [ct, st] = InMemoryTransport.createLinkedPair();
+    await server.connect(st);
+    const c = new Client({ name: "t", version: "1" });
+    await c.connect(ct);
+    const call = async (name: string, args: any = {}) => JSON.parse(((await c.callTool({ name, arguments: args })) as any).content[0].text);
+    const r = await call("cines_hold_seats", { showtimeId: "570-102599", seats: ["D5"] });
+    expect(r).toMatchObject({ status: "in_progress", jobId: expect.stringMatching(/^job_/) });
+    expect((await call("cines_hold_status")).lastJob).toMatchObject({ jobId: r.jobId, tool: "cines_hold_seats", status: "running" });
+    await new Promise((x) => setTimeout(x, 300));
+    expect((await call("cines_hold_status")).lastJob).toMatchObject({ jobId: r.jobId, status: "failed", error: { code: "CINES_SESSION_EXPIRED", retryable: false }, finishedAt: expect.any(String) });
+    await c.close();
+  });
 });
 
 describe("payment arm", () => {

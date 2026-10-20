@@ -9,7 +9,7 @@ import { z } from "zod";
 import type { ImageStore } from "./images.js";
 import type { PaymentArm } from "./order/arm.js";
 import { publicHold, type HoldService } from "./cinepolis/orders.js";
-import { CinesError } from "./errors.js";
+import { CinesError, toErrorShape } from "./errors.js";
 import { approvalRequired, capMxn, purchase, type PaymentDriver, type PurchaseLedger } from "./order/purchase.js";
 import { parseSeatLabels, validateSeats } from "./seats.js";
 import { resolveShowtime, seatExperience } from "./seatTools.js";
@@ -29,6 +29,8 @@ export interface OrderToolContext extends ToolContext {
   baseUrl?: () => string;
   /** How long a tool waits before returning `in_progress` (default 110 s). */
   waitMs?: number;
+  /** Same for holds (default 40 s, must stay under the hub's MCP timeout). */
+  holdWaitMs?: number;
 }
 
 /** Publish a private confirmation screenshot as a short-lived loopback URL for the hub. */
@@ -50,13 +52,47 @@ function needsInput(r: { requestId: string; kind: string; prompt: string; expire
 /** Background jobs started by tools that paused for secure input; resolved by cines_secure_input. */
 const jobs = new Map<string, Promise<unknown>>();
 
+/** Newest background job (in_progress result), visible in cines_hold_status for ~15 min. */
+export interface LastJob {
+  jobId: string;
+  tool: string;
+  status: "running" | "done" | "failed";
+  error?: { code: string; message: string; retryable: boolean };
+  startedAt: string;
+  finishedAt?: string;
+}
+let lastJob: LastJob | undefined;
+const LAST_JOB_TTL_MS = 15 * 60_000;
+
+function trackJob(jobId: string, tool: string, job: Promise<unknown>): void {
+  const j: LastJob = { jobId, tool, status: "running", startedAt: new Date().toISOString() };
+  lastJob = j;
+  job.then(
+    () => {
+      j.status = "done";
+      j.finishedAt = new Date().toISOString();
+    },
+    (e: unknown) => {
+      j.status = "failed";
+      j.error = toErrorShape(e).error;
+      j.finishedAt = new Date().toISOString();
+    },
+  );
+}
+
+export function currentLastJob(now = Date.now()): LastJob | null {
+  if (!lastJob) return null;
+  const ref = Date.parse(lastJob.finishedAt ?? lastJob.startedAt);
+  return now - ref > LAST_JOB_TTL_MS && lastJob.status !== "running" ? null : lastJob;
+}
+
 export function registerOrderTools(server: McpServer, ctx: OrderToolContext): void {
   const waitMs = ctx.waitMs ?? 110_000;
   /** Holds must answer well under the hub's MCP timeout (~60 s). */
-  const holdWaitMs = Math.min(waitMs, 40_000);
+  const holdWaitMs = Math.min(ctx.holdWaitMs ?? 40_000, waitMs);
 
   /** Run work; if it pauses for secure input, park it and return needs_input. */
-  async function runInteractive(work: () => Promise<unknown>, wait = waitMs) {
+  async function runInteractive(work: () => Promise<unknown>, wait = waitMs, tool = "cines") {
     const r = await runUntilInput(ctx.broker, work, { waitMs: wait });
     if (r.done) return ok(r.value);
     if (r.request) {
@@ -65,6 +101,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
     }
     const id = `job_${Date.now().toString(36)}`;
     jobs.set(id, r.job);
+    trackJob(id, tool, r.job);
     return ok({ status: "in_progress", jobId: id, note: "Sigue en curso; consulta con cines_hold_status." });
   }
 
@@ -123,7 +160,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
             warnings: v.warnings.length ? v.warnings : undefined,
             next: "Muestra el resumen. Para pagar llama cines_purchase con holdId y expectedTotal = total; para cancelar, cines_release_hold.",
           };
-        }, holdWaitMs);
+        }, holdWaitMs, "cines_hold_seats");
       } catch (e) {
         if (e instanceof CinesError && e.code === "CINES_SESSION_EXPIRED") ctx.session.invalidate();
         return fail(e);
@@ -165,6 +202,7 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
           pendingInput: ctx.broker.list(),
           purchases: ctx.ledger.recent(3).map((e) => ({ purchaseId: e.purchaseId, at: e.at, total: e.totalMxn, currency: "MXN", status: e.status, bookingNumber: e.bookingNumber, imageUrl: e.imageUrl, dryRun: e.dryRun })),
           paymentArmed: ctx.arm?.status() ?? { armed: false },
+          lastJob: currentLastJob(),
           successfulPurchases: ctx.ledger.successes(),
           purchaseApprovalRequired: approvalRequired(ctx.ledger),
           session: ctx.session.status(),
@@ -211,6 +249,8 @@ export function registerOrderTools(server: McpServer, ctx: OrderToolContext): vo
             }
             return { ...pub, imageUrl, next: imageUrl ? "Envía imageUrl (confirmación) al usuario." : undefined };
           }),
+          waitMs,
+          "cines_purchase",
         );
       } catch (e) {
         return fail(e);
