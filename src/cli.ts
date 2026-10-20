@@ -95,12 +95,12 @@ async function main(argv: string[]): Promise<number> {
   const [cmd, ...rest] = argv;
   switch (cmd) {
     case "probe": {
-      const rows = await probe(rest[0]);
+      const rows = await probe(rest[0] || undefined);
       for (const r of rows) console.log(`${r.ok ? "OK  " : "FAIL"} ${r.op.padEnd(10)} ${String(r.ms).padStart(5)} ms  ${r.note}`);
       return rows.every((r) => r.ok) ? 0 : 1;
     }
     case "listings": {
-      const cinemaId = rest[0] ?? "cinepolis-parque-toreo-cdmx";
+      const cinemaId = rest[0] || "cinepolis-parque-toreo-cdmx";
       const tz = "America/Mexico_City";
       const today = localDate(new Date(), tz);
       const date = rest[1] === "tomorrow" ? addDays(today, 1) : rest[1] && rest[1] !== "today" ? rest[1] : today;

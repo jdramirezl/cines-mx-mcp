@@ -176,7 +176,11 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
             ...movieSummary(titles.get(id), id),
             showtimes: list.map((s) => `${s.time} ${s.language} ${s.experience ?? s.format}${ids.length > 1 ? ` @${cinemaLabel(ctx, s.cinemaId)}` : ""}${s.availability === "half_full" ? " (llenándose)" : ""}`),
           })),
-          note: byMovie.size ? undefined : "No hay funciones restantes para esa fecha.",
+          note: byMovie.size
+            ? undefined
+            : showtimes.some((s) => s.date >= day)
+              ? "No hay funciones restantes para esa fecha."
+              : "Cinépolis aún no publica la cartelera de ese día.",
         });
       } catch (e) {
         return fail(e);

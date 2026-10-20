@@ -147,6 +147,13 @@ describe("CinepolisProvider", () => {
     expect(api.calls.filter((c) => c.op === "Billboard")).toHaveLength(2);
   });
 
+  it("treats a null billboard (not published yet) as no showtimes", async () => {
+    const api = fakeApi({ Billboard: () => ({ billboardByCinema: null, billboard: null }) });
+    const p = new CinepolisProvider({ client: api.client });
+    await expect(p.getShowtimesByCinema("cinepolis-parque-toreo-cdmx")).resolves.toEqual([]);
+    await expect(p.getShowtimesByMovie("street-fighter", ["cinepolis-parque-toreo-cdmx"])).resolves.toEqual([]);
+  });
+
   it("raises CINES_SCHEMA_CHANGED when the payload shape changes", async () => {
     const api = fakeApi({ Billboard: () => ({ billboardByCinema: { dates: [], schedules: [{ cinemaId: "x" }] } }) });
     const p = new CinepolisProvider({ client: api.client });

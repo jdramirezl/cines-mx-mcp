@@ -196,6 +196,13 @@ describe("MCP server", () => {
     expect(value.movies.every((m: any) => m.presale && m.release >= "2026-10-19")).toBe(true);
   });
 
+  it("says when a date is not published yet", async () => {
+    const { value, isError } = await call("cines_listings", { cinema: "toreo", date: "2026-11-30" });
+    expect(isError).toBe(false);
+    expect(value.movies).toEqual([]);
+    expect(value.note).toMatch(/aún no publica/);
+  });
+
   it("returns the shared error shape for bad input", async () => {
     const r = await call("cines_listings", { cinema: "perisur" });
     expect(r.isError).toBe(true);

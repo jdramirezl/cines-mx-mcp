@@ -60,8 +60,9 @@ export class CinepolisProvider implements CinemaProvider {
         isAbsoluteExperiencePath: true,
         timezone: this.tzFor(cinemaId),
       });
-      const bb = parse(z.object({ billboardByCinema: BillboardSchema }), data, "Billboard").billboardByCinema;
-      return mapBillboard(bb, this.tzFor);
+      // null = nothing published (yet) for this cinema; not a schema change.
+      const bb = parse(z.object({ billboardByCinema: BillboardSchema.nullable() }), data, "Billboard").billboardByCinema;
+      return bb ? mapBillboard(bb, this.tzFor) : [];
     });
   }
 
@@ -75,8 +76,8 @@ export class CinepolisProvider implements CinemaProvider {
         timezone: DEFAULT_TZ,
         isAbsoluteExperiencePath: true,
       });
-      const bb = parse(z.object({ billboard: BillboardSchema }), data, "Billboard").billboard;
-      return mapBillboard(bb, this.tzFor);
+      const bb = parse(z.object({ billboard: BillboardSchema.nullable() }), data, "Billboard").billboard;
+      return bb ? mapBillboard(bb, this.tzFor) : [];
     });
   }
 
