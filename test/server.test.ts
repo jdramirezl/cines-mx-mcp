@@ -9,7 +9,7 @@ import type { Cinema, Showtime } from "../src/domain.js";
 import type { HttpRequest, Transport } from "../src/http/transport.js";
 import { DEFAULT_PROFILE } from "../src/profile.js";
 import { pickBestAndAlternatives, rankShowtimes } from "../src/ranking.js";
-import { matchMovies, resolveCinemas, resolveDate } from "../src/resolve.js";
+import { matchMovies, normTitle, queryVariants, resolveCinemas, resolveDate, scoreMovies } from "../src/resolve.js";
 import { assertLoopback, startServer } from "../src/server.js";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -59,6 +59,27 @@ describe("resolve", () => {
     expect(matchMovies("laberinto", movies)[0]?.id).toBe("el-laberinto-del-fauno");
     expect(matchMovies("pans labyrinth", movies)[0]?.id).toBe("el-laberinto-del-fauno");
     expect(matchMovies("batman", movies)).toEqual([]);
+  });
+  it("normalizes packaging noise, accents and case in titles", () => {
+    expect(normTitle("Tu Nombre (TBC)")).toBe("tu nombre");
+    expect(normTitle("TU NOMBRE [Reestreno] - Subtitulada")).toBe("tu nombre");
+    expect(normTitle("El Corazón De La Bestia")).toBe("el corazon de la bestia");
+    expect(queryVariants("Your Name - Kimi no Na wa")).toEqual(expect.arrayContaining(["Your Name", "Kimi no Na wa", "tu nombre"]));
+  });
+  it("matches Spanish, English, original and aliased titles, tolerating typos", () => {
+    const movies = [
+      { id: "tu-nombre", title: "Tu Nombre (TBC)", originalTitle: "Your Name" },
+      { id: "el-nombre-de-la-rosa", title: "El Nombre de la Rosa", originalTitle: "The Name of the Rose" },
+      { id: "frankenstein", title: "Frankenstein", originalTitle: "Frankenstein" },
+      { id: "no-hay-dos-sin-tres", title: "No Hay Dos Sin Tres", originalTitle: "No Hay Dos Sin Tres" },
+    ] as any[];
+    for (const q of ["Your Name - Kimi no Na wa", "Kimi no Na wa", "Tu Nombre", "tu nombre (reestreno)", "YOUR NAME", "tú nombre"]) expect(matchMovies(q, movies)[0]?.id, q).toBe("tu-nombre");
+    expect(matchMovies("frankenstien", movies)[0]?.id).toBe("frankenstein");
+    expect(matchMovies("el nombre de la rosa", movies)[0]?.id).toBe("el-nombre-de-la-rosa");
+    // Short shared words do not drag in unrelated titles.
+    expect(scoreMovies("Kimi no Na wa", movies).map((x) => x.movie.id)).toEqual(["tu-nombre"]);
+    expect(matchMovies("Kimi", movies)).toEqual([]);
+    expect(matchMovies("Kimi", movies, ["Your Name"])[0]?.id).toBe("tu-nombre");
   });
 });
 
@@ -177,6 +198,56 @@ describe("MCP server", () => {
     const s = await call("cines_showtimes", { movie: "Street Fighter", language: "SUB" });
     expect(s.value.count).toBeGreaterThan(0);
     expect(s.value.showtimes.every((x: any) => x.lang === "SUB")).toBe(true);
+  });
+
+  it("cines_find_movie searches every cinema over a range and finds billboard-only movies by any title", async () => {
+    // "tu-nombre" is on the billboard but missing from the catalog fixture (the live failure mode).
+    for (const q of ["Your Name - Kimi no Na wa", "Tu Nombre", "kimi no na wa"]) {
+      const { value, isError } = await call("cines_find_movie", { movie: q });
+      expect(isError, q).toBe(false);
+      // Its 19-Oct shows already started at the pinned 18:00, so the first date is the 20th.
+      expect(value, q).toMatchObject({ found: true, movie: { id: "tu-nombre" }, firstDate: "2026-10-20" });
+      expect(value.searched).toMatchObject({ from: "2026-10-19", to: "2026-10-25", publishedThrough: "2026-10-21" });
+      expect(value.searched.cinemas).toHaveLength(7);
+      expect(value.cinemas[0]).toMatchObject({ firstDate: "2026-10-20", dates: expect.arrayContaining(["2026-10-21"]) });
+    }
+    const later = await call("cines_find_movie", { movie: "clayface" });
+    expect(later.value).toMatchObject({ found: true, firstDate: "2026-10-21" });
+    const alt = await call("cines_find_movie", { movie: "Kimi", altTitles: ["Your Name"] });
+    expect(alt.value.movie.id).toBe("tu-nombre");
+  });
+
+  it("cines_find_movie not-found says which range and cinemas were searched", async () => {
+    const { value, isError } = await call("cines_find_movie", { movie: "Batman Begins", cinema: "toreo", dateTo: "2026-10-20" });
+    expect(isError).toBe(false);
+    expect(value).toMatchObject({ found: false, searched: { from: "2026-10-19", to: "2026-10-20", cinemas: ["Parque Toreo", "Parque Toreo VIP"] } });
+    expect(value.note).toMatch(/Parque Toreo, Parque Toreo VIP entre 2026-10-19 y 2026-10-20.*no digas que no está en cartelera fuera de ese rango/);
+    const s = await call("cines_showtimes", { movie: "Batman Begins" });
+    expect(s.value.error.message).toMatch(/cartelera publicada de .*Parque Toreo.*publicada hasta 2026-10-21/);
+  });
+
+  it("cines_listings over a range covers all cinemas and every day", async () => {
+    const { value, isError } = await call("cines_listings", { date: "hoy", dateTo: "miércoles" });
+    expect(isError).toBe(false);
+    expect(value).toMatchObject({ date: "2026-10-19", dateTo: "2026-10-21", publishedThrough: "2026-10-21" });
+    expect(value.cinemas).toHaveLength(7);
+    const clay = value.movies.find((m: any) => m.id === "clayface");
+    expect(clay).toMatchObject({ firstDate: "2026-10-21", dates: ["2026-10-21"], languages: expect.any(Array), cinemas: expect.any(Array) });
+    expect(value.movies.find((m: any) => m.id === "tu-nombre")?.dates).toEqual(["2026-10-20", "2026-10-21"]);
+    const beyond = await call("cines_listings", { date: "hoy", days: 10 });
+    expect(beyond.value.note).toMatch(/solo ha publicado funciones hasta 2026-10-21/);
+    const one = await call("cines_listings", { date: "hoy" });
+    expect(one.value.cinemas).toEqual(["Parque Toreo"]);
+    const bad = await call("cines_listings", { date: "2026-10-21", dateTo: "2026-10-20" });
+    expect(bad.value.error.code).toBe("CINES_BAD_REQUEST");
+  });
+
+  it("cines_showtimes accepts a date range", async () => {
+    const all = await call("cines_showtimes", { movie: "street fighter" });
+    const r = await call("cines_showtimes", { movie: "street fighter", date: "mañana", dateTo: "mañana" });
+    expect(r.value.range).toEqual({ from: "2026-10-20", to: "2026-10-20" });
+    expect(r.value.showtimes.every((x: any) => x.date === "2026-10-20")).toBe(true);
+    expect(r.value.count).toBeLessThan(all.value.count);
   });
 
   it("cines_best_showtime returns best + 2 alternatives with prices", async () => {

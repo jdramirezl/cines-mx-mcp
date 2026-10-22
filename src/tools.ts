@@ -10,7 +10,7 @@ import { CinesError, toErrorShape } from "./errors.js";
 import type { Profile } from "./profile.js";
 import type { CinemaProvider, TicketType } from "./provider.js";
 import { pickBestAndAlternatives, rankShowtimes, type Scored, type TimeWindow } from "./ranking.js";
-import { matchMovies, norm, resolveCinemas, resolveDate } from "./resolve.js";
+import { normTitle, resolveCinemas, resolveDate, scoreMovies, titleScore } from "./resolve.js";
 import { addDays, localDate } from "./time.js";
 
 export interface ToolContext {
@@ -73,19 +73,78 @@ async function showtimesFor(ctx: ToolContext, cinemaIds: string[]): Promise<Show
   return lists.flat();
 }
 
-async function resolveMovie(ctx: ToolContext, query: string, cinemaIds: string[]): Promise<Movie> {
-  const movies = await catalog(ctx, cinemaIds);
-  const hits = matchMovies(query, movies);
+/** Default search horizon for "where is X": today + 7 days, or further if Cinépolis published more (max 21). */
+export const DEFAULT_SEARCH_DAYS = 7;
+const MAX_RANGE_DAYS = 21;
+
+export interface DateRange {
+  from: string;
+  to: string;
+}
+
+/** Resolve dateFrom/date + dateTo/days to an inclusive range (max 21 days). */
+export function resolveRange(args: { from?: string; to?: string; days?: number }, tz: string, now: Date, defaultDays = 1): DateRange {
+  const from = resolveDate(args.from, tz, now);
+  let to = args.to ? resolveDate(args.to, tz, now) : addDays(from, (args.days ?? defaultDays) - 1);
+  if (args.to && to < from) {
+    // "hasta el domingo" said on a Monday means the coming Sunday, already handled; a past date is a mistake.
+    throw new CinesError("CINES_BAD_REQUEST", `El rango termina (${to}) antes de empezar (${from}).`);
+  }
+  if (to > addDays(from, MAX_RANGE_DAYS - 1)) to = addDays(from, MAX_RANGE_DAYS - 1);
+  return { from, to };
+}
+
+const RANGE_ARGS = {
+  dateTo: z.string().optional().describe("Last date of a range (YYYY-MM-DD, mañana, weekday, e.g. 'domingo' for 'hasta el domingo')"),
+  days: z.number().int().min(1).max(21).optional().describe("Range length in days starting at `date` (alternative to dateTo)"),
+};
+const ALT_TITLES = z
+  .array(z.string())
+  .max(5)
+  .optional()
+  .describe("Other titles the user may mean (English/original/Japanese/Spanish), e.g. ['Your Name','Kimi no Na wa']");
+
+/** Movies the user's cinemas show: the catalog plus any billboard movie the catalog missed (title from its id). */
+async function searchPool(ctx: ToolContext, cinemaIds: string[]): Promise<{ movies: Movie[]; showtimes: Showtime[] }> {
+  const [movies, showtimes] = await Promise.all([catalog(ctx, cinemaIds).catch(() => [] as Movie[]), showtimesFor(ctx, cinemaIds)]);
+  const known = new Set(movies.map((m) => m.id));
+  const extra: Movie[] = [];
+  for (const id of new Set(showtimes.map((x) => x.movieId))) {
+    if (known.has(id)) continue;
+    const title = id.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    extra.push({ chain: "cinepolis", id, title, originalTitle: title, rating: "", ratingDescription: "", genres: [], synopsis: "", availableForSale: true, categories: [], presale: false, comingSoon: false, nowPlaying: true, experiences: [], tags: [], alerts: [] });
+  }
+  return { movies: [...movies, ...extra], showtimes };
+}
+
+function publishedThrough(showtimes: Showtime[]): string | undefined {
+  return showtimes.reduce<string | undefined>((m, x) => (!m || x.date > m ? x.date : m), undefined);
+}
+
+async function resolveMovie(ctx: ToolContext, query: string, cinemaIds: string[], altTitles: string[] = []): Promise<Movie> {
+  const { movies, showtimes } = await searchPool(ctx, cinemaIds);
+  const hits = scoreMovies(query, movies, altTitles);
   if (!hits.length) {
-    const sample = movies.slice(0, 12).map((m) => m.title).join(", ");
-    throw new CinesError("CINES_NOT_FOUND", `No encontré "${query}" en tus cines. En cartelera: ${sample}…`);
+    const closest = closestTitles(query, movies, altTitles);
+    throw new CinesError(
+      "CINES_NOT_FOUND",
+      `No encontré "${query}" en la cartelera publicada de ${cinemaIds.map((id) => cinemaLabel(ctx, id)).join(", ")} (publicada hasta ${publishedThrough(showtimes) ?? "—"}).${closest.length ? ` Parecidas: ${closest.join(", ")}.` : ""} Prueba cines_find_movie con altTitles.`,
+    );
   }
   const top = hits[0]!;
-  if (hits.length >= 4 && matchMovies(query, [top]).length && norm(top.title) !== norm(query) && query.trim().length < 4) {
-    // Very short query matching many titles: let the model ask.
-    throw new CinesError("CINES_BAD_REQUEST", `"${query}" es ambiguo: ${hits.slice(0, 5).map((m) => m.title).join(" | ")}`);
+  if (hits.length >= 4 && top.score < 1 && normTitle(query).length < 4) {
+    throw new CinesError("CINES_BAD_REQUEST", `"${query}" es ambiguo: ${hits.slice(0, 5).map((m) => m.movie.title).join(" | ")}`);
   }
-  return top;
+  return top.movie;
+}
+
+function closestTitles(query: string, movies: Movie[], altTitles: string[]): string[] {
+  return movies
+    .map((m) => ({ m, s: Math.max(...[query, ...altTitles].flatMap((q) => [titleScore(q, m.title), titleScore(q, m.originalTitle)])) }))
+    .filter((x) => x.s >= 0.3)
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 3)
+    .map((x) => x.m.title);
 }
 
 /** Ticket advice for one showtime: default type price, cheaper promos, Club note. */
@@ -148,39 +207,65 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
     "cines_listings",
     {
-      title: "Listings for a cinema and date",
+      title: "Listings for cinemas and a date or date range",
       description:
-        "Movies and showtimes at one or more of the user's cinemas for a date. `cinema` accepts names like 'toreo', 'toreo vip', 'miyana'. `date` accepts YYYY-MM-DD, 'hoy', 'mañana' or a weekday. Languages: SUB=subtitulada, ESP=doblada.",
+        "Movies and showtimes at the user's cinemas for a date, or for a date range ('¿qué hay hasta el domingo?' → date:'hoy', dateTo:'domingo'). `cinema` accepts names like 'toreo', 'toreo vip', 'miyana' or 'todos'; default: the home cinema for one day, ALL the user's cinemas for a range. One day returns times; a range returns one line per movie (dates, cinemas, languages) — call again with one cinema and date for times. Languages: SUB=subtitulada, ESP=doblada.",
       inputSchema: {
-        cinema: z.string().optional().describe("Cinema name or id; default: home cinema (Parque Toreo)"),
-        date: z.string().optional().describe("YYYY-MM-DD, hoy, mañana, or weekday; default today"),
+        cinema: z.string().optional().describe("Cinema name(s) or id(s), or 'todos'; default: home cinema (one day) / all cinemas (range)"),
+        date: z.string().optional().describe("YYYY-MM-DD, hoy, mañana, or weekday; default today (start of the range)"),
+        ...RANGE_ARGS,
       },
       annotations: READ_ONLY,
     },
-    async ({ cinema, date }) => {
+    async ({ cinema, date, dateTo, days }) => {
       try {
-        const ids = resolveCinemas(cinema ?? ctx.profile.cinemas[0]!.id, ctx.profile);
-        const day = resolveDate(date, tz, now());
-        const [movies, showtimes] = await Promise.all([catalog(ctx, ids), showtimesFor(ctx, ids)]);
+        const range = resolveRange({ from: date, to: dateTo, days }, tz, now());
+        const multi = range.to > range.from;
+        const ids = resolveCinemas(cinema ?? (multi ? undefined : ctx.profile.cinemas[0]!.id), ctx.profile);
+        const [movies, showtimes] = await Promise.all([catalog(ctx, ids).catch(() => [] as Movie[]), showtimesFor(ctx, ids)]);
         const titles = new Map(movies.map((m) => [m.id, m]));
         const cutoff = now().getTime();
+        const inRange = showtimes.filter((s) => s.date >= range.from && s.date <= range.to && Date.parse(s.startsAt) >= cutoff);
         const byMovie = new Map<string, Showtime[]>();
-        for (const s of showtimes) {
-          if (s.date !== day || Date.parse(s.startsAt) < cutoff) continue;
-          byMovie.set(s.movieId, [...(byMovie.get(s.movieId) ?? []), s]);
+        for (const s of inRange) byMovie.set(s.movieId, [...(byMovie.get(s.movieId) ?? []), s]);
+        const published = publishedThrough(showtimes);
+        const note = byMovie.size
+          ? published && published < range.to
+            ? `Cinépolis solo ha publicado funciones hasta ${published}.`
+            : undefined
+          : showtimes.some((s) => s.date >= range.from)
+            ? "No hay funciones restantes en esas fechas."
+            : "Cinépolis aún no publica la cartelera de esas fechas.";
+        const base = { date: range.from, dateTo: multi ? range.to : undefined, cinemas: ids.map((id) => cinemaLabel(ctx, id)), publishedThrough: published, note };
+        if (!multi) {
+          return ok({
+            ...base,
+            movies: [...byMovie].map(([id, list]) => ({
+              ...movieSummary(titles.get(id), id),
+              showtimes: list.map((s) => `${s.time} ${s.language} ${s.experience ?? s.format}${ids.length > 1 ? ` @${cinemaLabel(ctx, s.cinemaId)}` : ""}${s.availability === "half_full" ? " (llenándose)" : ""}`),
+            })),
+          });
         }
         return ok({
-          date: day,
-          cinemas: ids.map((id) => cinemaLabel(ctx, id)),
-          movies: [...byMovie].map(([id, list]) => ({
-            ...movieSummary(titles.get(id), id),
-            showtimes: list.map((s) => `${s.time} ${s.language} ${s.experience ?? s.format}${ids.length > 1 ? ` @${cinemaLabel(ctx, s.cinemaId)}` : ""}${s.availability === "half_full" ? " (llenándose)" : ""}`),
-          })),
-          note: byMovie.size
-            ? undefined
-            : showtimes.some((s) => s.date >= day)
-              ? "No hay funciones restantes para esa fecha."
-              : "Cinépolis aún no publica la cartelera de ese día.",
+          ...base,
+          movies: [...byMovie]
+            .map(([id, list]) => {
+              const m = titles.get(id);
+              const dates = [...new Set(list.map((s) => s.date))].sort();
+              return {
+                id,
+                title: m?.title ?? id,
+                original: m && m.originalTitle !== m.title ? m.originalTitle : undefined,
+                rating: m?.rating,
+                firstDate: dates[0],
+                dates,
+                cinemas: [...new Set(list.map((s) => cinemaLabel(ctx, s.cinemaId)))],
+                languages: [...new Set(list.map((s) => s.language))],
+                formats: [...new Set(list.map((s) => s.experience ?? s.format))],
+                showtimes: list.length,
+              };
+            })
+            .sort((a, b) => a.firstDate!.localeCompare(b.firstDate!) || a.title.localeCompare(b.title, "es")),
         });
       } catch (e) {
         return fail(e);
@@ -191,23 +276,64 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
   server.registerTool(
     "cines_find_movie",
     {
-      title: "Which of my cinemas show a movie",
-      description: "Find a movie by (partial) title and list which of the user's cinemas show it and on which dates.",
-      inputSchema: { movie: z.string().describe("Movie title, partial title, or id") },
+      title: "Where and when my cinemas show a movie",
+      description:
+        "Find a movie by title (Spanish, English or original; partial, accents and '(TBC)'-style suffixes ignored) across ALL the user's cinemas over a date range (default today + 7 days, extended to the furthest date Cinépolis has published, max 21). Returns each cinema with its first date and all dates. Pass `altTitles` with other names you know for it. If `found` is false, the result says exactly which range and cinemas were searched: never claim it is not showing outside that range.",
+      inputSchema: {
+        movie: z.string().describe("Movie title, partial title, or id"),
+        altTitles: ALT_TITLES,
+        cinema: z.string().optional().describe("Restrict to these cinemas; default all of the user's cinemas"),
+        date: z.string().optional().describe("Range start; default today"),
+        ...RANGE_ARGS,
+      },
       annotations: READ_ONLY,
     },
-    async ({ movie }) => {
+    async ({ movie, altTitles, cinema, date, dateTo, days }) => {
       try {
-        const ids = resolveCinemas(undefined, ctx.profile);
-        const m = await resolveMovie(ctx, movie, ids);
-        const st = await ctx.provider.getShowtimesByMovie(m.id, ids);
+        const ids = resolveCinemas(cinema, ctx.profile);
+        const { movies, showtimes } = await searchPool(ctx, ids);
+        const published = publishedThrough(showtimes);
+        let range = resolveRange({ from: date, to: dateTo, days }, tz, now(), DEFAULT_SEARCH_DAYS);
+        if (!dateTo && !days && published && published > range.to) range = resolveRange({ from: date, to: published }, tz, now());
         const cutoff = now().getTime();
-        const per = new Map<string, Set<string>>();
-        for (const s of st) if (Date.parse(s.startsAt) >= cutoff) per.set(s.cinemaId, (per.get(s.cinemaId) ?? new Set()).add(s.date));
+        const searched = { from: range.from, to: range.to, cinemas: ids.map((id) => cinemaLabel(ctx, id)), publishedThrough: published };
+        const hits = scoreMovies(movie, movies, altTitles ?? []);
+        const live = (id: string) => showtimes.filter((s) => s.movieId === id && s.date >= range.from && s.date <= range.to && Date.parse(s.startsAt) >= cutoff);
+        // Prefer the best-scoring match that actually has showtimes in range.
+        const withShows = hits.filter((h) => h.score >= hits[0]!.score - 0.15 && live(h.movie.id).length);
+        const pick = withShows[0] ?? hits[0];
+        if (!pick) {
+          return ok({
+            found: false,
+            query: movie,
+            searched,
+            closest: closestTitles(movie, movies, altTitles ?? []),
+            note: `No aparece en la cartelera publicada de ${searched.cinemas.join(", ")} entre ${range.from} y ${range.to} (Cinépolis ha publicado hasta ${published ?? "—"}). Puede estrenarse después o con otro título; no digas que no está en cartelera fuera de ese rango.`,
+          });
+        }
+        const m = pick.movie;
+        const per = new Map<string, Showtime[]>();
+        for (const s of live(m.id)) per.set(s.cinemaId, [...(per.get(s.cinemaId) ?? []), s]);
+        const cinemas = [...per]
+          .map(([id, list]) => {
+            const dates = [...new Set(list.map((s) => s.date))].sort();
+            return { cinema: cinemaLabel(ctx, id), firstDate: dates[0]!, dates, languages: [...new Set(list.map((s) => s.language))], formats: [...new Set(list.map((s) => s.experience ?? s.format))] };
+          })
+          .sort((a, b) => a.firstDate.localeCompare(b.firstDate));
+        const others = hits.filter((h) => h.movie.id !== m.id && h.score >= 0.8).slice(0, 3).map((h) => h.movie.title);
         return ok({
+          found: cinemas.length > 0,
           movie: movieSummary(m, m.id),
-          cinemas: [...per].map(([id, dates]) => ({ cinema: cinemaLabel(ctx, id), dates: [...dates].sort() })),
-          note: per.size ? undefined : m.presale || m.comingSoon ? `Aún sin funciones en tus cines; estreno ${m.releaseDate ?? "por anunciar"}.` : "Sin funciones en tus cines.",
+          matchedAs: pick.via !== m.title ? pick.via : undefined,
+          firstDate: cinemas[0]?.firstDate,
+          cinemas,
+          searched,
+          alsoMatched: others.length ? others : undefined,
+          note: cinemas.length
+            ? undefined
+            : m.presale || m.comingSoon
+              ? `Existe en Cinépolis pero sin funciones en tus cines entre ${range.from} y ${range.to}; estreno ${m.releaseDate ?? "por anunciar"}.`
+              : `Existe en Cinépolis pero sin funciones en tus cines entre ${range.from} y ${range.to} (publicado hasta ${published ?? "—"}).`,
         });
       } catch (e) {
         return fail(e);
@@ -220,21 +346,23 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Showtimes for a movie",
       description:
-        "All upcoming showtimes for a movie at the user's cinemas (or the given ones), optionally for one date, language or format. Use cines_best_showtime to recommend one.",
+        "All upcoming showtimes for a movie at the user's cinemas (or the given ones), optionally for one date or a range (date + dateTo/days), language or format. Use cines_best_showtime to recommend one.",
       inputSchema: {
         movie: z.string(),
+        altTitles: ALT_TITLES,
         cinema: z.string().optional().describe("Name(s) or id(s), comma separated; default all of the user's cinemas"),
-        date: z.string().optional(),
+        date: z.string().optional().describe("One date, or the start of a range with dateTo/days; default: all published dates"),
+        ...RANGE_ARGS,
         language: z.enum(["SUB", "ESP", "ORIGINAL"]).optional(),
         format: z.string().optional().describe("2D, 3D, 4DX, IMAX, XE, SCREENX, VIP or REGULAR"),
       },
       annotations: READ_ONLY,
     },
-    async ({ movie, cinema, date, language, format }) => {
+    async ({ movie, altTitles, cinema, date, dateTo, days, language, format }) => {
       try {
         const ids = resolveCinemas(cinema, ctx.profile);
-        const m = await resolveMovie(ctx, movie, ids);
-        const day = date ? resolveDate(date, tz, now()) : undefined;
+        const m = await resolveMovie(ctx, movie, ids, altTitles);
+        const range = date || dateTo || days ? resolveRange({ from: date, to: dateTo, days }, tz, now()) : undefined;
         const f = format?.toUpperCase();
         const cinemas = await ctx.provider.getCinemas(ids);
         const vip = new Set(cinemas.filter((c) => c.isVip).map((c) => c.id));
@@ -242,12 +370,12 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
         const st = (await ctx.provider.getShowtimesByMovie(m.id, ids)).filter(
           (s) =>
             Date.parse(s.startsAt) >= cutoff &&
-            (!day || s.date === day) &&
+            (!range || (s.date >= range.from && s.date <= range.to)) &&
             (!language || s.language === language) &&
             (!f ||
               (f === "VIP" ? vip.has(s.cinemaId) : f === "REGULAR" ? !s.experience && !vip.has(s.cinemaId) : s.experience === f || s.format === f)),
         );
-        return ok({ movie: movieSummary(m, m.id), count: st.length, showtimes: st.slice(0, 60).map((s) => compactShowtime(ctx, s)) });
+        return ok({ movie: movieSummary(m, m.id), range, count: st.length, truncated: st.length > 60 || undefined, showtimes: st.slice(0, 60).map((s) => compactShowtime(ctx, s)) });
       } catch (e) {
         return fail(e);
       }
@@ -262,6 +390,7 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
         "Recommend the best showtime for a movie plus 2 alternatives, using the user's rules: closest cinema, subtitled over dubbed (dubbed only if no subtitled option), inside the time window, regular/VIP before premium formats. Includes warnings (4DX, VIP price, B15/C, special screenings) and ticket prices (default 'Admision General'; cheaper promos are only mentioned).",
       inputSchema: {
         movie: z.string(),
+        altTitles: ALT_TITLES,
         date: z.string().optional().describe("YYYY-MM-DD, hoy, mañana or weekday; default today"),
         window: z.enum(["morning", "afternoon", "evening", "night", "any"]).optional().describe("'night' = 19:00-24:00 ('en la noche')"),
         after: z.string().regex(/^\d{2}:\d{2}$/).optional().describe("Earliest start HH:MM (overrides window)"),
@@ -276,7 +405,7 @@ export function registerReadTools(server: McpServer, ctx: ToolContext): void {
     async (args) => {
       try {
         const ids = resolveCinemas(args.cinema, ctx.profile);
-        const m = await resolveMovie(ctx, args.movie, ids);
+        const m = await resolveMovie(ctx, args.movie, ids, args.altTitles);
         const day = resolveDate(args.date, tz, now());
         const [cinemas, showtimes] = await Promise.all([ctx.provider.getCinemas(ids), ctx.provider.getShowtimesByMovie(m.id, ids)]);
         const window = (args.window ?? (args.after || args.before ? undefined : "any")) as TimeWindow | undefined;

@@ -69,19 +69,133 @@ export function resolveDate(input: string | undefined, tz: string, now = new Dat
   throw new CinesError("CINES_BAD_REQUEST", `Fecha no reconocida: "${input}". Usa YYYY-MM-DD, hoy, mañana o un día de la semana.`);
 }
 
-/** Best movie matches for a title query; exact id first, then token overlap on title/original title. */
-export function matchMovies(query: string, movies: Movie[]): Movie[] {
-  const q = norm(query);
-  const exact = movies.filter((m) => m.id === query || norm(m.title) === q || norm(m.originalTitle) === q);
-  if (exact.length) return exact;
-  const qt = q.split(" ").filter(Boolean);
-  const scored = movies
-    .map((m) => {
-      const hay = `${norm(m.title)} ${norm(m.originalTitle)} ${m.id.replace(/-/g, " ")}`;
-      const hit = qt.filter((t) => hay.split(" ").some((w) => w.startsWith(t))).length;
-      return { m, score: hit / qt.length + (hay.includes(q) ? 1 : 0) };
-    })
-    .filter((x) => x.score >= 0.6)
-    .sort((a, b) => b.score - a.score);
-  return scored.map((x) => x.m);
+/** Words that are packaging, not title: (TBC), Reestreno, Subtitulada, formats… */
+const TITLE_NOISE = new Set(["tbc", "reestreno", "re", "estreno", "subtitulada", "subtitulado", "doblada", "doblado", "sub", "esp", "version", "original", "2d", "3d", "4dx", "imax", "xe", "screenx", "vip", "pelicula", "movie", "film", "aniversario", "anniversary", "edicion", "especial"]);
+/** Articles/prepositions ignored when scoring (but kept when the whole query is short). */
+const TITLE_STOP = new Set(["el", "la", "los", "las", "un", "una", "de", "del", "y", "the", "a", "an", "of", "and"]);
+
+/** Normalized title: accents, case, punctuation and bracketed/packaging noise removed. */
+export function normTitle(s: string): string {
+  const base = s.replace(/[([{][^)\]}]*[)\]}]/g, " ");
+  return norm(base)
+    .split(" ")
+    .filter((t) => t && !TITLE_NOISE.has(t))
+    .join(" ");
+}
+
+/**
+ * Known alternate titles (normalized) for movies whose Spanish title differs
+ * from the English/original one the user may say. Cinépolis gives one
+ * `originalName`; this covers the rest. Keep small.
+ */
+export const TITLE_ALIASES: Record<string, string[]> = {
+  "kimi no na wa": ["your name", "tu nombre"],
+  "your name": ["kimi no na wa", "tu nombre"],
+  "sen to chihiro no kamikakushi": ["spirited away", "el viaje de chihiro"],
+  "spirited away": ["el viaje de chihiro"],
+  "tonari no totoro": ["my neighbor totoro", "mi vecino totoro"],
+  "mononoke hime": ["princess mononoke", "la princesa mononoke"],
+  "howls moving castle": ["el increible castillo vagabundo"],
+  "pans labyrinth": ["el laberinto del fauno"],
+};
+
+function lev1(a: string, b: string): boolean {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  let i = 0;
+  let j = 0;
+  let edits = 0;
+  while (i < a.length && j < b.length) {
+    if (a[i] === b[j]) {
+      i++;
+      j++;
+      continue;
+    }
+    if (++edits > 1) return false;
+    if (a.length === b.length && a[i] === b[j + 1] && a[i + 1] === b[j]) {
+      i += 2; // adjacent transposition ("frankenstien")
+      j += 2;
+      continue;
+    }
+    if (a.length > b.length) i++;
+    else if (b.length > a.length) j++;
+    else {
+      i++;
+      j++;
+    }
+  }
+  return edits + (a.length - i) + (b.length - j) <= 1;
+}
+
+function tokenHit(q: string, words: string[]): boolean {
+  return words.some((w) => w === q || (q.length >= 3 && w.startsWith(q)) || (q.length >= 5 && w.length >= 5 && lev1(q, w)));
+}
+
+/** 0..1: share of the query's meaningful tokens found in the title, plus coverage of the title. */
+export function titleScore(query: string, title: string): number {
+  const q = normTitle(query);
+  const t = normTitle(title);
+  if (!q || !t) return 0;
+  if (q === t) return 1;
+  const qAll = q.split(" ");
+  const qt = qAll.filter((x) => !TITLE_STOP.has(x));
+  const qs = qt.length ? qt : qAll;
+  const words = t.split(" ");
+  const meaningful = words.filter((x) => !TITLE_STOP.has(x));
+  const hits = qs.filter((x) => tokenHit(x, words)).length;
+  const recall = hits / qs.length;
+  const covered = meaningful.filter((w) => qs.some((x) => w === x || (x.length >= 3 && w.startsWith(x)))).length / Math.max(1, meaningful.length);
+  const phrase = ` ${t} `.includes(` ${q} `) ? 0.1 : 0;
+  return Math.min(0.99, recall * 0.75 + covered * 0.25 + phrase);
+}
+
+export const MATCH_THRESHOLD = 0.6;
+
+/** Query variants: as given, its parts ("Your Name - Kimi no Na wa"), aliases, hub-provided alternates. */
+export function queryVariants(query: string, altTitles: string[] = []): string[] {
+  const out = new Set<string>();
+  for (const raw of [query, ...altTitles]) {
+    if (!raw?.trim()) continue;
+    out.add(raw);
+    for (const part of raw.split(/\s[-–—:/|]\s|\s*[/|]\s*|\s*[(（][^)）]*[)）]\s*/)) if (normTitle(part)) out.add(part);
+    const inner = /[(（]([^)）]+)[)）]/.exec(raw)?.[1];
+    if (inner && normTitle(inner)) out.add(inner);
+  }
+  for (const v of [...out]) for (const a of TITLE_ALIASES[normTitle(v)] ?? []) out.add(a);
+  return [...out];
+}
+
+export interface MovieMatch {
+  movie: Movie;
+  score: number;
+  /** The title (or alternate) that matched. */
+  via: string;
+}
+
+/** Ranked matches across title, original title, id slug and alternates. */
+export function scoreMovies(query: string, movies: Movie[], altTitles: string[] = []): MovieMatch[] {
+  const variants = queryVariants(query, altTitles);
+  const out: MovieMatch[] = [];
+  for (const m of movies) {
+    if (m.id === query.trim()) {
+      out.push({ movie: m, score: 1, via: m.id });
+      continue;
+    }
+    let best = { score: 0, via: "" };
+    for (const name of [m.title, m.originalTitle, m.id.replace(/-/g, " ")]) {
+      if (!name) continue;
+      for (const v of variants) {
+        const sc = titleScore(v, name);
+        if (sc > best.score) best = { score: sc, via: name };
+      }
+    }
+    if (best.score >= MATCH_THRESHOLD) out.push({ movie: m, ...best });
+  }
+  return out.sort((a, b) => b.score - a.score);
+}
+
+/** Best movie matches for a title query (see scoreMovies). */
+export function matchMovies(query: string, movies: Movie[], altTitles: string[] = []): Movie[] {
+  const scored = scoreMovies(query, movies, altTitles);
+  const exact = scored.filter((x) => x.score >= 1);
+  return (exact.length ? exact : scored).map((x) => x.movie);
 }
